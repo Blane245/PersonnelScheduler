@@ -1,0 +1,34 @@
+{
+  "name": "personnelscheduler",
+  "version": "1.0.0",
+  "description": "Management of organizaiotnal job, roles, personnel, their training, and tasks to be performed",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./bin/www",
+    "devstart": "nodemon ./bin./www",
+    "serverstart": "$env:debug = 'personnelscheduler:*'; npm start",
+    "lint": "eslint ./"
+  },
+  "author": "Bob Lane",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^3.2.2",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "^4.17.1",
+    "express-validator": "^6.13.0",
+    "fund": "^1.0.0",
+    "http-errors": "~1.6.3",
+    "luxon": "^2.2.0",
+    "mongodb": "^4.2.1",
+    "mongoose": "^6.1.1",
+    "morgan": "~1.9.1",
+    "pug": "~3.0.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.4.1",
+    "nodemon": "^2.0.15"
+  }
+
+}

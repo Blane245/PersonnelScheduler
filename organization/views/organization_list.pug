@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  h1= title
+
+  ul
+    each organization in organization_list
+      li
+        a(href=organization.url) #{organization.name}
+        |  (#{organization.description})
+
+    else
+      li There are no organizations.
