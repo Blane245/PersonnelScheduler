@@ -136,3 +136,55 @@ exports.organization_modify_post = [
 
 
 ]
+
+// Display organization delete form on GET.
+exports.organization_delete_get = function(req, res, next) {
+
+    async.parallel({
+        organization: function(callback) {
+            Organization.findById(req.params.id).exec(callback)
+        },
+        // organizations_books: function(callback) {
+        //   Book.find({ 'organization': req.params.id }).exec(callback)
+        // },
+    }, function(err, results) {
+        if (err) { return next(err); }
+        if (results.organization==null) { // No results.
+            res.redirect('/catalog/organizations');
+        }
+        // Successful, so render.
+        res.render('organization_delete', { title: 'Delete organization (without children checking', organization: results.organization } );
+    });
+
+};
+
+// Handle organization delete on POST.
+exports.organization_delete_post = function(req, res, next) {
+
+    async.parallel({
+        organization: function(callback) {
+          Organization.findById(req.body.organizationid).exec(callback)
+        },
+        // organizations_books: function(callback) {
+        //   Book.find({ 'organization': req.body.organizationid }).exec(callback)
+        // },
+    }, function(err, results) {
+        if (err) { return next(err); }
+        // Success
+        // if (results.organizations_books.length > 0) {
+        //     // organization has books. Render in same way as for GET route.
+        //     res.render('organization_delete', { title: 'Delete organization (delete children first)', organization: results.organization, organization_books: results.organizations_books } );
+        //     return;
+        // }
+        // else {
+            // organization has no children. Delete object and redirect to the list of organizations.
+            Organization.findByIdAndRemove(req.body.organizationid, function deleteorganization(err) {
+                if (err) { return next(err); }
+                // Success - go to organization list
+                res.redirect('/organizations')
+            })
+        // }
+    });
+};
+
+

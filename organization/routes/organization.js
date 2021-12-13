@@ -17,4 +17,10 @@ router.get('/organization/:id/modify', organization_controller.organization_modi
 /* Post request for modifying an organization */
 router.post('/organization/:id/modify', organization_controller.organization_modify_post);
 
+/* GET request for deleting an organization */
+router.get('/organization/:id/delete', organization_controller.organization_delete_get);
+
+/* Post request for deleting an organization */
+router.post('/organization/:id/delete', organization_controller.organization_delete_post);
+
 module.exports = router;

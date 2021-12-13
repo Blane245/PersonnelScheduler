@@ -1,0 +1,28 @@
+extends ../../views/layout
+
+block content
+  h1= 'Name: ' + organization.name
+  p= 'Description: ' + organization.description
+
+  //- if organization_books.length
+
+  //-   p #[strong Delete the following books before attempting to delete this organization.]
+
+  //-   div(style='margin-left:20px;margin-top:20px')
+
+  //-     h4 Books
+
+  //-     dl
+  //-     each book in organization_books
+  //-       dt
+  //-         a(href=book.url) #{book.title}
+  //-       dd #{book.summary}
+
+  //- else
+  p Do you really want to delete this organization?
+
+  form(method='POST' action='')
+    div.form-group
+      input#organizationid.form-control(type='hidden',name='organizationid', required='true', value=organization._id )
+
+    button.btn.btn-primary(type='submit') Delete
