@@ -1,0 +1,25 @@
+extends ../../views/layout
+
+block content
+    h1= title
+    form(method='POST' action='')
+        div.form-group 
+            label(for='name') Name: 
+            input#name.form-control(
+                name='name'
+                type='text' 
+                placeholder='Name of organization'
+                required='true' 
+                value=(undefined==organization ? '' : organization.name))        
+        div.form-group 
+            label(for='description') Name: 
+            input#name.form-control(
+                name='description'
+                type='textarea' 
+                placeholder='Description of organization'
+                required='false' value=(undefined==organization ? '' : organization.description))
+        button.btn.btn-primary(type='submit') Submit
+    if errors 
+        ul  
+            for error in errors 
+                li!= error.msg

@@ -5,7 +5,7 @@ var Schema = mongoose.Schema;
 var OrganizationSchema = new Schema(
   {
       name: {type: String, required: true},
-      description: {type: String, required: true}
+      description: {type: String, required: false}
       
   }
 );
@@ -14,7 +14,7 @@ var OrganizationSchema = new Schema(
 OrganizationSchema
   .virtual('url')
   .get(function() {
-    return '/organizations/organization' + this._id;
+    return '/organizations/organization/' + this._id;
   });
 
 module.exports = mongoose.model('Organization', OrganizationSchema);

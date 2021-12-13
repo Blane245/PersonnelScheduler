@@ -1,13 +1,32 @@
-extends layout
+extends ../../views/layout
 
 block content
   h1= title
 
-  ul
-    each organization in organization_list
-      li
-        a(href=organization.url) #{organization.name}
-        |  (#{organization.description})
+  button(type='button' class='btn btn-large btn-primary') 
+    a(href='organizations/create' style="color:white") Add Organization 
+  if organization_list.count != 0
+    table(class='table' id='org-table')
+      thread 
+        tr 
+          th(class='text-center' scope='col') Name 
+          th(class='text-center' scope='col') Description 
+          th(class='text-center' scope='col') Roles / Jobs / Personnel
+          th(class='text-center' scope='col') Modify / Delete 
+      tbody 
 
-    else
-      li There are no organizations.
+        each org in organization_list
+          tr 
+            td(class='text-left') #{org.name}
+            td(class='text-left') #{org.description}
+            td(class='text-center')
+              button(type='button' class='btn btn-small btn-dark')
+                a(href='organizations/organization/'+org.id+'/jobs' style="color:white") J
+            td(class='text-center')
+              button(type='button' class='btn btn-small btn-primary') 
+                a(href='organizations/organization/'+org.id+'/modify' style="color:white") M
+            td(class='text-center')
+              button(type='button' class='btn btn-small btn-danger') 
+                a(href='organizations/organization/'+org.id+'/delete' style="color:white") D
+  else
+    li There are no organizations

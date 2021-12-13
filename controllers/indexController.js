@@ -2,7 +2,7 @@ const { body,validationResult } = require('express-validator');
 var async = require('async');
 
 exports.index = function(req, res, next) {
-    // display the main menu
+    // display the entry page
     console.log('ready to render index');
     res.render('index', {title: 'Personnel Scheduler'});
 
