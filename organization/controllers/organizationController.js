@@ -1,6 +1,9 @@
 var Organization = require('../../models/organization');
+var Job = require('../../models/job');
 const { check, validationResult } = require('express-validator');
 var async = require('async');
+const organization = require('../../models/organization');
+const { populate } = require('../../models/organization');
 
 exports.organization_list = function (req, res, next) {
     console.log('in organization_list controller');
@@ -187,4 +190,32 @@ exports.organization_delete_post = function(req, res, next) {
     });
 };
 
+// Controller for Job processing
+
+// the list of jobs for an organization
+exports.organization_job_list = function (req, res, next) {
+    console.log('in organization_job_list controller for organization '+req.params.orgid);
+    async.parallel ({
+        // get the organization object for this group of jobs
+        organization: function (callback) {
+            Organization.findById(req.params.orgid).exec(callback);},
+        // get the jobs for this organization
+        jobs: function (callback) {
+            Job.find({ 'organization': req.params.orgid })
+            .populate('organization')
+            .exec(callback);
+        },
+    }, function (err, results) {
+        if (err) { return next(err); }
+        orgName = results.organization.name;
+        console.log('orgname =' + orgName + ", count of jobs " + results.jobs);
+        res.render(
+            '../organization/views/job_list', 
+            { title: "Job List for Organization '"+ orgName + "'",
+             organization: results.organization, 
+             job_list: results.jobs });
+
+    });
+
+};
 

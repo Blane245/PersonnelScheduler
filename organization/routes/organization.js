@@ -23,4 +23,8 @@ router.get('/organization/:id/delete', organization_controller.organization_dele
 /* Post request for deleting an organization */
 router.post('/organization/:id/delete', organization_controller.organization_delete_post);
 
+/* GET request for list of jobs in an organization */
+router.get('/organization/:orgid/jobs', organization_controller.organization_job_list);
+
+
 module.exports = router;
