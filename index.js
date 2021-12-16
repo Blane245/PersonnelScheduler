@@ -5,13 +5,16 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var organizationRouter = require('./organization/routes/organization.js');
+var jobRouter = require('./job/routes/job.js');
+var roleRouter = require('./role/routes/role.js');
 var app = express();
 console.log('starting index.js');
 
 //pug view engine setup
 app.set('views', [
   path.join(__dirname, 'views'), 
-  path.join(__dirname, 'organization/views')
+  path.join(__dirname, 'organization/views'),
+  path.join(__dirname, 'job/views')
 ]);
 app.set('view engine', 'pug');
 
@@ -24,6 +27,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // router tables
 app.use('/', indexRouter);
 app.use('/organizations', organizationRouter );
+app.use('/jobs', jobRouter );
+app.use('/roles', roleRouter );
 console.log('routes established ');
 
 // catch 404 and forward to error handler
