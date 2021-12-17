@@ -14,7 +14,8 @@ console.log('starting index.js');
 app.set('views', [
   path.join(__dirname, 'views'), 
   path.join(__dirname, 'organization/views'),
-  path.join(__dirname, 'job/views')
+  path.join(__dirname, 'job/views'),
+  path.join(__dirname, 'role/views')
 ]);
 app.set('view engine', 'pug');
 

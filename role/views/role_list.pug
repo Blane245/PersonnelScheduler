@@ -2,11 +2,11 @@ extends ../../views/layout
 
 block content
     h1= title
-    - var addurl = '/jobs/' +organization.id+ '/create/'
+    - var addurl = '/roles/' +organization.id+ '/create/'
     button(type='button' class='btn btn-large btn-primary') 
-        a(href=addurl style="color:white") Add Job
-    if job_list.length != 0
-        table(class='table' id='job-table')
+        a(href=addurl style="color:white") Add Role
+    if role_list.length != 0
+        table(class='table' id='role-table')
             thread 
                 tr 
                 th(class='text-center' scope='col') Name 
@@ -15,15 +15,15 @@ block content
                 th(class='text-center' scope='col') Delete
             tbody 
 
-                each job in job_list
+                each role in role_list
                     tr 
-                        td(class='text-left') #{job.name}
-                        td(class='text-left') #{job.description}
+                        td(class='text-left') #{role.name}
+                        td(class='text-left') #{role.description}
                         td(class='text-center')
                             //- button(type='button' class='btn btn-small btn-primary') 
-                            a(href='/jobs/job/'+job.id+'/modify' style="color:blue") M
+                            a(href='/roles/role/'+role.id+'/modify' style="color:blue") M
                         td(class='text-center')
                             //- button(type='button' class='btn btn-small btn-danger') 
-                            a(href='/jobs/job/'+job.id+'/delete' style="color:red") D
+                            a(href='/roles/role/'+role.id+'/delete' style="color:red") D
     else
-        li There are no jobs for organization #{organization.name}
+        li There are no roles for organization #{organization.name}

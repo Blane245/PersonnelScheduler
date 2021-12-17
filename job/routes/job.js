@@ -22,6 +22,6 @@ router.post('/job/:id/modify', job_controller.job_modify_post);
 router.get('/job/:id/delete', job_controller.job_delete_get);
 
 /* Post request for deleting a job */
-router.post('/:id/delete', job_controller.job_delete_post);
+router.post('/job/:id/delete', job_controller.job_delete_post);
 
 module.exports = router;

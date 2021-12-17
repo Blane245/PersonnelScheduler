@@ -117,12 +117,9 @@ exports.job_modify_get = function(req, res, next) {
                 err.status = 404;
                 return next(err);
             }
-            var job = results.job;
-            req.body.org = job.organization;
             res.render('job_form', { 
                 title: 'Modify Job', 
-                job: results.job,
-                org: results.body.org});    
+                job: results.job});    
         }
     );
 
@@ -137,30 +134,37 @@ exports.job_modify_post = [
     (req, res, next) => {
 
         const errors = validationResult(req);
-        var job = new Job (
-            { name: req.body.name.trim(),
-              description: req.body.description.trim(),
-              organization: req.body.org,
-              _id:req.params.id
-            });
-        
-        if (!errors.isEmpty()) {
-            res.render('job_form', {
-                title: 'Modify Job', 
-                name:req.body.name.trim(), 
-                description:req.body.description.trim(),
-                org:req.body.org,
-                errors: errors.array() });
-        } else {
-            // data is valid. update the record
-            Job.findByIdAndUpdate(req.params.id, job, {}, function (err) {
-                if (err) { return next(err); }
-                var org = req.body.org;
-                orgId = org.id
-                res.redirect ('/jobs/'+orgId);
 
-            });
-        }
+        // reload the job record to retrieve the organization
+        Job.findById(req.params.id).exec(function(err, job) {
+            if (err) { return next(err); }
+            if (job==null) {
+                var err = new Error('Job not found');
+                err.status = 404;
+                return next(err);
+            }
+            var org = job.organization;
+            var newJob = new Job (
+                { name: req.body.name.trim(),
+                    description: req.body.description.trim(),
+                    organization: org,
+                    _id:req.params.id
+                });
+        
+            if (!errors.isEmpty()) {
+                res.render('job_form', {
+                    title: 'Modify Job', 
+                    job:newJob,
+                    errors: errors.array() });
+            } else {
+                // data is valid. update the record
+                Job.findByIdAndUpdate(req.params.id, newJob, {}, function (err) {
+                    if (err) { return next(err); }
+                    res.redirect ('/jobs/'+newJob.organization);
+
+                });
+            }
+        });
         
  
 
@@ -196,7 +200,7 @@ exports.job_delete_post = function(req, res, next) {
 
     async.parallel({
         job: function(callback) {
-          Job.findById(req.body.id).exec(callback)
+          Job.findById(req.params.id).exec(callback)
         },
         // organizations_books: function(callback) {
         //   Book.find({ 'organization': req.body.organizationid }).exec(callback)
@@ -204,12 +208,10 @@ exports.job_delete_post = function(req, res, next) {
     }, function(err, results) {
         if (err) { return next(err); }
             // job has no children. Delete object and redirect to the list of jobs for its organization.
-            Job.findByIdAndRemove(req.body.id, function deletejob(err) {
+            Job.findByIdAndRemove(results.job.id, function deletejob(err) {
                 if (err) { return next(err); }
                 // Success - go to organization list
-                var org = req.body.org;
-                orgId = org.id
-                res.redirect ('/jobs/'+orgId);
+                res.redirect ('/jobs/'+results.job.organization);
             })
         // }
     });
