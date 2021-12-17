@@ -7,15 +7,21 @@ var indexRouter = require('./routes/index');
 var organizationRouter = require('./organization/routes/organization.js');
 var jobRouter = require('./job/routes/job.js');
 var roleRouter = require('./role/routes/role.js');
+var trainingRouter = require('./training/routes/training.js');
+//var personRouter = require('./person/routes/person.js');
+// TODO Training Administration
+// TODO Personnel Administration
+// TODO Task Management
 var app = express();
-console.log('starting index.js');
 
 //pug view engine setup
 app.set('views', [
   path.join(__dirname, 'views'), 
   path.join(__dirname, 'organization/views'),
   path.join(__dirname, 'job/views'),
-  path.join(__dirname, 'role/views')
+  path.join(__dirname, 'role/views'),
+  path.join(__dirname, 'training/views'),
+//  path.join(__dirname, 'person/views')
 ]);
 app.set('view engine', 'pug');
 
@@ -30,7 +36,8 @@ app.use('/', indexRouter);
 app.use('/organizations', organizationRouter );
 app.use('/jobs', jobRouter );
 app.use('/roles', roleRouter );
-console.log('routes established ');
+app.use('/trainings', trainingRouter );
+//app.use('/persons', personRouter );
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -58,6 +65,5 @@ mongoose.Promise = global.Promise;
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
-console.log('index is ready');
 module.exports = app;
   

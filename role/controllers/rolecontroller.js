@@ -101,7 +101,6 @@ exports.role_create_post = [
 }
 ];
 
-// FIXME not passing org well between renders. problably in jobs as well. 
 // Display role modify form on GET.
 exports.role_modify_get = function(req, res, next) {
     async.parallel(

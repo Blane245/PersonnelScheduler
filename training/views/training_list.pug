@@ -1,0 +1,29 @@
+extends ../../views/layout
+
+block content
+  h1= title
+
+  button(type='button' class='btn btn-large btn-primary') 
+    a(href='trainings/create' style="color:white") Add Training Program 
+  if training_list.length != 0
+    table(class='table' id='training-table')
+      thread 
+        tr 
+          th(class='text-center' scope='col') Name 
+          th(class='text-center' scope='col') Description 
+          th(class='text-center' scope='col') Modify 
+          th(class='text-center' scope='col') Delete 
+      tbody 
+
+        each training in training_list
+          tr 
+            td(class='text-left') #{training.name}
+            td(class='text-left') #{training.description}
+            td(class='text-center')
+              //- button(type='button' class='btn btn-small btn-primary') 
+              a(href='trainings/training/'+training.id+'/modify' style="color:blue") M
+            td(class='text-center')
+              //- button(type='button' class='btn btn-small btn-danger') 
+              a(href='trainings/training/'+training.id+'/delete' style="color:red") D
+  else
+    li There are no trainings
