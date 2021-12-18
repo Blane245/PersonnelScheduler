@@ -11,6 +11,7 @@ block content
                 tr 
                 th(class='text-center' scope='col') Name 
                 th(class='text-center' scope='col') Description 
+                th(class='text-center' scope='col') Roles 
                 th(class='text-center' scope='col') Modify
                 th(class='text-center' scope='col') Delete
             tbody 
@@ -19,6 +20,9 @@ block content
                     tr 
                         td(class='text-left') #{job.name}
                         td(class='text-left') #{job.description}
+                        td(class='text-center')
+                            //- button(type='button' class='btn btn-small btn-primary') 
+                            a(href='/jobs/job/'+job.id+'/roles' style="color:blue") R
                         td(class='text-center')
                             //- button(type='button' class='btn btn-small btn-primary') 
                             a(href='/jobs/job/'+job.id+'/modify' style="color:blue") M

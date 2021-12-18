@@ -1,0 +1,16 @@
+extends ../../views/layout
+
+block content
+    h1= title
+    form(method='POST' action='')
+        div.form-group
+            label(for='role') Roles in the Job's Organization:
+            select#role.form-control(type='select', placeholder='Select role' name='role' required='true' )
+                for role in roles
+                    option(value=role._id) #{role.name}
+        button.btn.btn-primary(type='submit') Submit
+
+    if errors
+        ul
+          for error in errors
+            li!= error.msg

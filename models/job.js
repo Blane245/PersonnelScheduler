@@ -6,7 +6,8 @@ var JobSchema = new Schema(
   {
     organization: {type: Schema.Types.ObjectId, ref: 'Organization', required: true},
     name: {type: String, required: true},
-    description: {type: String, required: false}
+    description: {type: String, required: false},
+    role: [{type: Schema.Types.ObjectId, ref: 'Role'}]
   }
 );
 

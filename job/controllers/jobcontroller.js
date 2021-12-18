@@ -1,12 +1,12 @@
 var Organization = require('../../models/organization');
 var Job = require('../../models/job');
-const { check, validationResult } = require('express-validator');
+const { check, validationResult, body } = require('express-validator');
 var async = require('async');
 const organization = require('../../models/organization');
-
+const job = require('../../models/job');
+// TODO implement the many to many relationship with roles.
 // the list of jobs for an organization
 exports.organization_job_list = function (req, res, next) {
-    console.log('in Job_controller for organization '+req.params.orgid);
     async.parallel ({
         // get the organization object for this group of jobs
         organization: function (callback) {
@@ -216,3 +216,4 @@ exports.job_delete_post = function(req, res, next) {
         // }
     });
 };
+

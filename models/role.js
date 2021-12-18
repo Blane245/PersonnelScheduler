@@ -6,7 +6,8 @@ var RoleSchema = new Schema(
   {
     organization: {type: Schema.Types.ObjectId, ref: 'Organization', required: true},
     name: {type: String, required: true},
-    description: {type: String, required: false}
+    description: {type: String, required: false},
+    training: [{type: Schema.Types.ObjectId, ref: 'Training'}],
   }
 );
 
