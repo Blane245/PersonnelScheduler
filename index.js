@@ -8,8 +8,7 @@ var organizationRouter = require('./organization/routes/organization.js');
 var jobRouter = require('./job/routes/job.js');
 var roleRouter = require('./role/routes/role.js');
 var trainingRouter = require('./training/routes/training.js');
-//var personRouter = require('./person/routes/person.js');
-// TODO Training Administration
+var personRouter = require('./person/routes/person.js');
 // TODO Personnel Administration
 // TODO Task Management
 var app = express();
@@ -21,7 +20,7 @@ app.set('views', [
   path.join(__dirname, 'job/views'),
   path.join(__dirname, 'role/views'),
   path.join(__dirname, 'training/views'),
-//  path.join(__dirname, 'person/views')
+  path.join(__dirname, 'person/views')
 ]);
 app.set('view engine', 'pug');
 
@@ -37,7 +36,7 @@ app.use('/organizations', organizationRouter );
 app.use('/jobs', jobRouter );
 app.use('/roles', roleRouter );
 app.use('/trainings', trainingRouter );
-//app.use('/persons', personRouter );
+app.use('/persons', personRouter );
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

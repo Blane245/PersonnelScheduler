@@ -31,6 +31,7 @@ router.get('/job/:id/roles', job_role_controller.job_roles_get);
 /* GET request for adding a role to a job */
 router.get('/job/:id/role/add', job_role_controller.job_role_add_get);
 
+// FIXME not getting post when submitting job_role_add form
 /* Post request for adding a role to a job */
 router.post('/job/:id/role/add', job_role_controller.job_role_add_post);
 

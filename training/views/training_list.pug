@@ -3,9 +3,9 @@ extends ../../views/layout
 block content
   h1= title
 
-  button(type='button' class='btn btn-large btn-primary') 
-    a(href='trainings/create' style="color:white") Add Training Program 
-  if training_list.length != 0
+  a(href='trainings/create')
+    button.btn.btn-large.btn-primary(type='button') Add Training Program 
+  if training_list
     table(class='table' id='training-table')
       thread 
         tr 

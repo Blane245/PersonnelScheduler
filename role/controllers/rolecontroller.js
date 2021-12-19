@@ -174,6 +174,7 @@ exports.role_modify_post = [
 ]
 
 // Display role delete form on GET.
+// TODO prevent deletion when role has related jobs or tasks
 exports.role_delete_get = function(req, res, next) {
 
     async.parallel({

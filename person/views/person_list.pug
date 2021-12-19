@@ -1,0 +1,30 @@
+extends ../../views/layout
+
+block content
+    h1= title
+    - var addurl = '/persons/' +organization.id+ '/create/'
+    a(href=addurl)
+        button.btn.btn-large.btn-primary(type='button') Add New Person
+    if persons.length != 0
+        table(class='table' id='person-table')
+            thread 
+                tr 
+                th(class='text-left' scope='col') Name 
+                th(class='text-left' scope='col') Email Address
+                th(class='text-center' scope='col') Modify
+                th(class='text-center' scope='col') Delete
+            tbody 
+
+                each person in persons
+                    tr 
+                        td(class='text-left') #{person.fullName}
+                        td(class='text-left') #{person.email}
+                        td(class='text-center')
+                            a(href='/persons/person/'+person.id+'/modify')
+                                button.btn.btn-small.btn-primary(type='button')
+                        td(class='text-center')
+                            a(href='/persons/person/'+person.id+'/delete')
+                                button.btn.btn-small.btn-danger(type='button')
+    else
+        ul
+            li There are no persons for organization #{organization.name}

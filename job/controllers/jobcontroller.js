@@ -1,6 +1,6 @@
 var Organization = require('../../models/organization');
 var Job = require('../../models/job');
-const { check, validationResult, body } = require('express-validator');
+const { body, validationResult } = require('express-validator');
 var async = require('async');
 const organization = require('../../models/organization');
 const job = require('../../models/job');
@@ -20,14 +20,6 @@ exports.organization_job_list = function (req, res, next) {
     }, function (err, results) {
         if (err) { return next(err); }
         orgName = results.organization.name;
-        var jobs = results.jobs;
-        var n;
-        if (jobs == null)
-            n = 0;
-        else
-            n = jobs.length;
-        
-        console.log('orgname =' + orgName + ", count of jobs " + n);
         res.render(
             '../job/views/job_list', 
             { title: "Job List for Organization '"+ orgName + "'",
@@ -40,7 +32,7 @@ exports.organization_job_list = function (req, res, next) {
 
 // Display job create form on GET.
 exports.job_create_get = function(req, res, next) {
-    var org = Organization.findById(req.params.orgId)
+    Organization.findById(req.params.orgId)
         .exec(function (err, org) {
         if (err) { return next(err);}
         res.render('job_form', { title: 'Create Job for Organzation "' + org.name + '"'});
@@ -51,9 +43,9 @@ exports.job_create_get = function(req, res, next) {
 exports.job_create_post = [
 
     // validate and sanitize fields
-    check('name', 'Name must not be empty.').trim().isLength({min: 1}).escape(),
-    check('description', '').trim().escape(),
-    // check('organization', '').escape(),
+    body('name', 'Name must not be empty.').trim().isLength({min: 1}).escape(),
+    body('description', '').trim().escape(),
+    // body('organization', '').escape(),
     // prevent a new job from having the same name as a current one
 
     // save the new job
@@ -62,14 +54,11 @@ exports.job_create_post = [
         // get the organization that this job is to belong to
         Organization.findById(req.params.orgId).exec(function(err, org) {
             if (err) { return next(err);}
-            console.log('organization found for jobs ' + org.id);
             req.body.orgId = org._id;
             req.body.orgName = org.name;
             req.body.org = org;
-            console.log('Org in the req.body ' + req.body.org);
 
             // create an job object with escaped and trimmed data
-            console.log('ready to create a new job object');
             var job = new Job (
                 { name: req.body.name.trim(),
                     description: req.body.description.trim(),
@@ -127,8 +116,8 @@ exports.job_modify_get = function(req, res, next) {
 
 exports.job_modify_post = [
     // validate and sanitze fields.
-    check('name', 'Name must not be empty.').trim().isLength({min: 1}).escape(),
-    check('description', '').trim().escape(),
+    body('name', 'Name must not be empty.').trim().isLength({min: 1}).escape(),
+    body('description', '').trim().escape(),
 
     // process request after validation and sanittzation
     (req, res, next) => {
@@ -174,6 +163,7 @@ exports.job_modify_post = [
 ]
 
 // Display job delete form on GET.
+// TODO prevent deletion when job has related tasks
 exports.job_delete_get = function(req, res, next) {
 
     async.parallel({
@@ -190,7 +180,7 @@ exports.job_delete_get = function(req, res, next) {
         }
         req.body.org = results.job.organization;
         // Successful, so render.
-        res.render('job_delete', { title: 'Delete job (without children checking)', job: results.job } );
+        res.render('job_delete', { title: 'Delete job (without children bodying)', job: results.job } );
     });
 
 };

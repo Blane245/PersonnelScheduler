@@ -1,0 +1,43 @@
+extends ../../views/layout
+
+block content
+    h1= title
+    form(method='POST' action='')
+        div.form-group 
+            label(for='lastName') Last Name: 
+            input#name.form-control(
+                name='lastName'
+                type='text' 
+                placeholder='Last name of person'
+                required='true' 
+                value=(undefined==person ? '' : person.lastName))        
+        div.form-group 
+            label(for='firstName') First Name: 
+            input#name.form-control(
+                name='firstName'
+                type='text' 
+                placeholder='First name of person'
+                required='true' 
+                value=(undefined==person ? '' : person.firstName))        
+        div.form-group 
+            label(for='email') Email: 
+            input#name.form-control(
+                name='email'
+                type='textarea' 
+                placeholder='Email address'
+                required='false' value=(undefined==person ? '' : person.email))
+        if modify
+            div.form-group 
+                label(for='org') Organization:  
+                select#org.form-control(type='select', placeholder='Select organization' name='org' required='true' )
+                    - organizations.sort(function(a, b) {let textA = a.name.toUpperCase(); let textB = b.name.toUpperCase(); return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;});
+                    for org in organizations
+                        if (org._id.toString() === person.organization._id.toString())
+                            option(value=org.id selected) #{org.name}
+                        else
+                            option(value=org.id)  #{org.name}
+        button.btn.btn-primary(type='submit') Submit
+    if errors 
+        ul  
+            for error in errors 
+                li!= error.msg

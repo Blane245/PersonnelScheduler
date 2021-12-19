@@ -4,16 +4,14 @@ var async = require('async');
 const training = require('../../models/training');
 
 exports.training_list = function (req, res, next) {
-    console.log('in training_list controller');
     Training.find({}, 'name description')
         .sort({name: 1})
-        .exec(function (err, list_trainings) {
+        .exec(function (err, trainings) {
             if (err) { return next(err); }
             res.render(
                 '../views/training_list', 
-                { title: 'Training List', training_list: list_trainings });
+                { title: 'Training List', training_list: trainings });
         } , function(err, results) {
-            console.log(err);
             res.render('../views/training_list', { title: 'Training List', error: err, data: results }
             );
         });

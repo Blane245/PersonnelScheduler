@@ -30,7 +30,7 @@ exports.job_role_add_get = function(req, res, next) {
     // the list of possible roles are those owned by the organization
     
     // get the job so the org known
-    Job.findById(req.params.id)
+    Job.findById(req.params.id).populate('organization')
     .exec(function (err, job){
         if (err) { return next(err);}
 
