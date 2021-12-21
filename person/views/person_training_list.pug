@@ -2,10 +2,10 @@ extends ../../views/layout
 
 block content
     h1= title
-    - var addurl = '/persons/person/' +person.id+ '/training/create/'
+    - var addurl = '/persons/person/' +person.id+ '/person_training/create/'
     a(href=addurl)
-        button.btn.btn-large.btn-primary(type='button') Add Leave
-    if leaves
+        button.btn.btn-large.btn-primary(type='button') Add Training Record
+    if person_trainings
         table(class='table' id='training-table')
             thread 
                 tr 
@@ -20,7 +20,7 @@ block content
                 each person_training in person_trainings
                     tr 
                         td(class='text-left') #{person_training.training.name}
-                        td(class='text-left') #{person_training.expirationDate}
+                        td(class='text-left') #{person_training.expirationDate_formatted}
                         td(class='text-center')
                             a(href='/persons/person/'+person_training.id+'/person_training/modify')
                                 button.btn.btn-small.btn-primary(type='button')
@@ -29,4 +29,4 @@ block content
                                 button.btn.btn-small.btn-danger(type='button')
     else
         ul
-            li There are no leaves for person #{person.fullName}
+            li There are no training records for #{person.fullName}

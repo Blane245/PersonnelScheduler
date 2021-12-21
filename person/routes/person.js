@@ -44,5 +44,25 @@ router.get('/person/:id/leave/delete', person_controller.person_leave_delete_get
 /* POST request for deleting a person's leave */
 router.post('/person/:id/leave/delete', person_controller.person_leave_delete_post);
 
-// TODO add leave processing for a person
+/* GET request for handling a person's leave */
+router.get('/person/:id/person_training', person_controller.person_training_list);
+
+/* GET request for adding person_training */
+router.get('/person/:id/person_training/create', person_controller.person_training_create_get);
+
+/* POST request for adding person_training */
+router.post('/person/:id/person_training/create', person_controller.person_training_create_post);
+
+/* GET request for modifying person_training */
+router.get('/person/:id/person_training/modify', person_controller.person_training_modify_get);
+
+/* POST request for modfying person_training */
+router.post('/person/:id/person_training/modify', person_controller.person_training_modify_post);
+
+// /* GET request for deleting person's person_training */
+// router.get('/person/:id/person_training/delete', person_controller.person_training_delete_get);
+
+// /* POST request for deleting a person's person_training */
+// router.post('/person/:id/person_training/delete', person_controller.person_training_delete_post);
+
 module.exports = router;

@@ -1,4 +1,6 @@
 var mongoose = require('mongoose');
+const { DateTime } = require("luxon");
+
 
 var Schema = mongoose.Schema;
 
@@ -14,11 +16,11 @@ var Person_TrainingSchema = new Schema(
 Person_TrainingSchema
   .virtual('url')
   .get(function() {
-    return '/organizations/persontraining/' + this._id;
+    return '/organizations/person_training/' + this._id;
   });
-  Person_TrainingSchema
-  .virtual('expirationDate_formatted')
-  .get(function() {
-    return DateTime.fromJSDate(this.expirationDate).toFormat('yyyy-MM-dd');
-  });
+Person_TrainingSchema
+.virtual('expirationDate_formatted')
+.get(function() {
+return DateTime.fromJSDate(this.expirationDate).toFormat('yyyy-MM-dd');
+});
 module.exports = mongoose.model('Person_Training', Person_TrainingSchema);

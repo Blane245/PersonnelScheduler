@@ -12,6 +12,7 @@ block content
                 th(class='text-left' scope='col') Name 
                 th(class='text-left' scope='col') Email Address
                 th(class='text-center' scope='col') Leave
+                th(class='text-center' scope='col') Training
                 th(class='text-center' scope='col') Modify
                 th(class='text-center' scope='col') Delete
             tbody 
@@ -22,6 +23,9 @@ block content
                         td(class='text-left') #{person.email}
                         td(class='text-center')
                             a(href='/persons/person/'+person.id+'/leave')
+                                button.btn.btn-small.btn-dark(type='button')
+                        td(class='text-center')
+                            a(href='/persons/person/'+person.id+'/person_training')
                                 button.btn.btn-small.btn-dark(type='button')
                         td(class='text-center')
                             a(href='/persons/person/'+person.id+'/modify')

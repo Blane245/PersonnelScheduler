@@ -7,16 +7,19 @@ block content
            div(class='row')
                 div(class='col-sm-6')
                     label(for='training') Select Training: 
-                    select#type.form-control(type='select', placeholder='Select leave duration' name='duration' required='true')
-                    - trainings.sort(function(a, b) {let textA = a.name.toUpperCase(); let textB = b.name.toUpperCase(); return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;});
-                    for training in trainings
-                        if (training._id.toString() === person_training.training._id.toString())
-                            option(value=training._id selected) #{training.name}
-                        else
-                            option(value=training._id)  #{training.name}
-                div(class='col-sm-2')
+                    select#type.form-control(type='select', placeholder='Select training type' name='training' required='true')
+                        - trainings.sort(function(a, b) {let textA = a.name.toUpperCase(); let textB = b.name.toUpperCase(); return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;});
+                        for training in trainings
+                            if (modify)
+                                if (training._id.toString() === person_training.training._id.toString())
+                                    option(value=training._id selected) #{training.name}
+                                else
+                                    option(value=training._id)  #{training.name}
+                            else
+                                option(value=training._id)  #{training.name}
+                div(class='col-sm-3')
                     label(for='expirationDate') Expiration Date: 
-                    input#startDate.form-control(
+                    input#expirationDate.form-control(
                         name='expirationDate'
                         type='date' 
                         required='true' 
