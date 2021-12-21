@@ -1,0 +1,36 @@
+extends ../../views/layout
+
+block content
+    h1= title
+    - var addurl = '/persons/person/' +person.id+ '/leave/create/'
+    a(href=addurl)
+        button.btn.btn-large.btn-primary(type='button') Add Leave
+    if leaves
+        table(class='table' id='person-table')
+            thread 
+                tr 
+                th(class='text-left' scope='col') Leave Name 
+                th(class='text-left' scope='col') Start Date
+                th(class='text-left' scope='col') End Date
+                th(class='text-center' scope='col') Type
+                th(class='text-center' scope='col') Modify
+                th(class='text-center' scope='col') Delete
+            tbody 
+                //- sort in reverse start date order
+                - leaves.sort(function(a, b) {let textA = a.startDate; let textB = b.startDate; return (textA > textB) ? -1 : (textA < textB) ? 1 : 0;});
+
+                each leave in leaves
+                    tr 
+                        td(class='text-left') #{leave.name}
+                        td(class='text-left') #{leave.startDate_formatted}
+                        td(class='text-left') #{leave.endDate_formatted}
+                        td(class='text-left') #{leave.duration}
+                        td(class='text-center')
+                            a(href='/persons/person/'+leave.id+'/leave/modify')
+                                button.btn.btn-small.btn-primary(type='button')
+                        td(class='text-center')
+                            a(href='/persons/person/'+leave.id+'/leave/delete')
+                                button.btn.btn-small.btn-danger(type='button')
+    else
+        ul
+            li There are no leaves for person #{person.fullName}

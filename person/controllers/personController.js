@@ -1,6 +1,6 @@
 var Organization = require('../../models/organization');
 var Person = require('../../models/person');
-// var Leave = require('../../models/leave');
+var Leave = require('../../models/leave');
 const { body, validationResult } = require('express-validator');
 var async = require('async');
 
@@ -30,7 +30,7 @@ exports.organization_person_list = function (req, res, next) {
 
 // Display person create form on GET.
 exports.person_create_get = function(req, res, next) {
-    var org = Organization.findById(req.params.orgId)
+    Organization.findById(req.params.orgId)
         .exec(function (err, org) {
         if (err) { return next(err);}
         res.render('person_form', { title: 'Create Person for Organzation "' + org.name + '"'});
@@ -92,7 +92,6 @@ exports.person_create_post = [
 ];
 
 // Display person modify form on GET.
-// TODO allow the person to be moved from one organization to another
 exports.person_modify_get = function(req, res, next) {
     async.parallel({
         person: function(callback) {
@@ -208,4 +207,205 @@ exports.person_delete_post = function(req, res, next) {
         // }
     });
 };
+
+exports.person_leave_list = function(req, res, next) {
+
+    // get the person and all of the person's leave
+
+
+    // render the leave list for a person
+    async.parallel ({
+        // get the person object for this group of leaves
+        person: function (callback) {
+            Person.findById(req.params.id).exec(callback);},
+        // get the leaves for this person
+        leaves: function (callback) {
+            Leave.find({ 'person': req.params.id })
+            .exec(callback);
+        },
+    }, function (err, results) {
+        if (err) { return next(err); }
+        personName = results.person.fullName;
+        res.render(
+            '../person/views/leave_list', 
+            { title: "Leave List for '"+ personName + "'",
+             person: results.person, 
+             leaves: results.leaves });
+
+    });
+
+};
+
+// Display person's leave create form on GET.
+exports.person_leave_create_get = function(req, res, next) {
+    Person.findById(req.params.id)
+    .exec(function (err, person) {
+        if (err) { return next(err);}
+        res.render('leave_form', { title: 'Create Leave for Person "' + person.fullName + '"'});
+
+    });
+};
+
+// add or modify a leave for a person
+exports.person_leave_create_post = [
+    
+    // validate and sanitize fields
+    body('name', 'Leave name must be given.').trim().isLength({min: 1}).escape(),
+    body('startDate', 'Start Date must be a valid.').toDate(),
+    body('endDate', 
+        'End Date must be a valid date. If provided, it muust be greater than or equal to the Start Date.')
+        .optional({nullable: true, checkFalsy: true}).bail()
+        .custom((value, {req}) => value < req.body.startDate)
+        .toDate(),
+    body('duration', '').escape(),
+
+    // save the new leave
+    (req, res, next) => {
+
+        // Extract the validation errors from the request
+        const errors = validationResult (req);
+
+        // create a new leave record from the vlaidiated and sanitixed data.
+        var leave = new Leave ( {
+            name: req.body.name,
+            startDate : req.body.startDate,
+            endDate: req.body.endDate,
+            duration: req.body.duration,
+            person: req.params.id
+        });
+
+        // redisplay the form is there are errors
+        if (!errors.isEmpty()) {
+            Person.findById(req.param.id)
+            .exec (function (err, person) {
+                if (err) { return next (err); }
+                res.render('leave_form'), { 
+                    title: 'Create Leave for Person "' + person.name + '"',
+                    leave: newLeave,
+                    errors: errors.array()}
+                });
+        } else {
+            
+            // data is valid and sanitized. save it and return to leave list
+            leave.save(function (err) {
+                if (err) { 
+                    console.log('save error: \n'+err);
+                    return next (err);}
+                res.redirect('/persons/person/'+req.params.id+'/leave');
+            });
+        }
+                    
+    }
+
+
+];
+
+// Display person's leave modify form on GET.
+exports.person_leave_modify_get = function(req, res, next) {
+    async.parallel({
+        leave: function(callback) {
+            Leave.findById(req.params.id).populate('person').exec(callback);
+        },
+        } ,function(err, results) {
+            if (err) { return next(err); }
+            if (results.leave==null) {
+                var err = new Error('Leave not found');
+                err.status = 404;
+                return next(err);
+            }
+            res.render('leave_form', { 
+                title: "Modify Leave for '" + results.leave.person.fullName + "'", 
+                leave: results.leave,
+            });    
+        }
+    );
+
+}
+// TODO startDate is decrementing on each redisplay and endDate validation is not working
+// also validation errors are not clearing 
+// Display person's leave modify form on POST.
+exports.person_leave_modify_post = [
+    // validate and sanitize fields.
+    body('name', 'Leave name must not be empty.').trim().isLength({min: 1}).escape(),
+    body('startDate', 'Start Date must be a valid.').toDate(),
+    body('endDate', 
+        'End Date must be a valid date. If provided, it must be greater than or equal to the Start Date.')
+        .optional({nullable: true, checkFalsy: true}).bail()
+        .custom((value, {req}) => value < req.body.startDate)
+        .toDate(),
+    body('duration', '').escape(),
+
+    // process request after validation and sanittzation
+    (req, res, next) => {
+
+        const errors = validationResult(req);
+
+        // reload the person record to retrieve the organization
+        Leave.findById(req.params.id).populate('person').exec(function(err, leave) {
+            if (err) { return next(err); }
+            if (leave==null) {
+                var err = new Error('Leave not found');
+                err.status = 404;
+                return next(err);
+            }
+            var newLeave = new Leave (
+                { Name: req.body.Name,
+                    startDate: req.body.startDate,
+                    endDate: req.body.endDate,
+                    duration: req.body.duration,
+                    person: leave.person,
+                    _id: req.params.id
+                });
+        
+            if (!errors.isEmpty()) {
+                res.render('leave_form', {
+                    title: "Modify leave for Person '" + leave.person.fullName ,
+                    leave: newLeave,
+                    errors: errors.array() });
+            } else {
+                // data is valid. update the record
+                Leave.findByIdAndUpdate(req.params.id, newLeave, {}, function (err) {
+                    if (err) { return next(err); }
+
+                    // redirect to the person's orignal organization
+                    res.redirect ('/persons/person/'+leave.person.id+'/leave');
+
+                });
+            }
+        });
+    }
+
+]
+
+// Display person's leave delete form on GET.
+exports.person_leave_delete_get = function(req, res, next) {
+    Leave.findById(req.params.id).populate('person')
+    .exec(function(err, leave) {
+        if (err) { return next(err); }
+        if (leave==null) { // No results.
+            res.redirect('/index/');
+        }
+        // Successful, so render.
+        res.render('leave_delete', 
+            { title: "Delete leave for Person '" + leave.person.fullName + "'", 
+            leave: leave } );
+    });
+
+}
+
+// Display person's leave delete form on POST.
+exports.person_leave_delete_post = function(req, res, next) {
+    Leave.findById(req.params.id).populate('person')
+    .exec(function(err, leave) {
+        if (err) { return next(err); }
+            Leave.findByIdAndRemove(leave.id, function (err) {
+                if (err) { return next(err); }
+                // Success - go to organization list
+                res.redirect ('/persons/person/'+leave.person.id+'/leave');
+            })
+        // }
+    });
+
+}
+
 

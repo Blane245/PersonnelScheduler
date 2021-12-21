@@ -1,0 +1,12 @@
+extends ../../views/layout
+
+block content
+  h1= "Leave '"+ leave.name + "' for Person '" + leave.person.fullName + "'"
+  
+  p Do you really want to delete this leave?
+
+  form(method='POST' action='')
+    div.form-group
+      input#leaveid.form-control(type='hidden',name='leaveid', required='true', value=leave._id )
+
+    button.btn.btn-primary(type='submit') Delete

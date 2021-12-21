@@ -1,0 +1,32 @@
+extends ../../views/layout
+
+block content
+    h1= title
+    - var addurl = '/persons/person/' +person.id+ '/training/create/'
+    a(href=addurl)
+        button.btn.btn-large.btn-primary(type='button') Add Leave
+    if leaves
+        table(class='table' id='training-table')
+            thread 
+                tr 
+                th(class='text-left' scope='col') Training Name 
+                th(class='text-left' scope='col') Expiration Date
+                th(class='text-center' scope='col') Modify
+                th(class='text-center' scope='col') Delete
+            tbody 
+                //- sort in reverse start date order
+                - person_trainings.sort(function(a, b) {let textA = a.expirationDate; let textB = b.expirationDate; return (textA > textB) ? -1 : (textA < textB) ? 1 : 0;});
+
+                each person_training in person_trainings
+                    tr 
+                        td(class='text-left') #{person_training.training.name}
+                        td(class='text-left') #{person_training.expirationDate}
+                        td(class='text-center')
+                            a(href='/persons/person/'+person_training.id+'/person_training/modify')
+                                button.btn.btn-small.btn-primary(type='button')
+                        td(class='text-center')
+                            a(href='/persons/person/'+person_training.id+'/person_training/delete')
+                                button.btn.btn-small.btn-danger(type='button')
+    else
+        ul
+            li There are no leaves for person #{person.fullName}

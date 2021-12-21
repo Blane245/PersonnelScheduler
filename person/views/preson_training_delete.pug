@@ -1,0 +1,12 @@
+extends ../../views/layout
+
+block content
+  h1= "Training '"+ training.name + "' for Person '" + person.fullName + "'"
+  
+  p Do you really want to delete this training record?
+
+  form(method='POST' action='')
+    div.form-group
+      input#person_trainingid.form-control(type='hidden',name='person_trainingid', required='true', value=person_training._id )
+
+    button.btn.btn-primary(type='submit') Delete
