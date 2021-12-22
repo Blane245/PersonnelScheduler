@@ -9,21 +9,25 @@ block content
         table(class='table' id='role-table')
             thread 
                 tr 
-                th(class='text-center' scope='col') Name 
-                th(class='text-center' scope='col') Description 
+                th(class='text-left' scope='col') Name 
+                th(class='text-left' scope='col') Description 
+                th(class='text-center' scope='col') Training Needs 
                 th(class='text-center' scope='col') Modify
                 th(class='text-center' scope='col') Delete
             tbody 
-
                 each role in role_list
                     tr 
                         td(class='text-left') #{role.name}
                         td(class='text-left') #{role.description}
                         td(class='text-center')
-                            //- button(type='button' class='btn btn-small btn-primary') 
-                            a(href='/roles/role/'+role.id+'/modify' style="color:blue") M
+                            a(href='/roles/role/'+role.id+'/training')
+                                button.btn.btn-small.btn-dark(type='button')
                         td(class='text-center')
-                            //- button(type='button' class='btn btn-small btn-danger') 
-                            a(href='/roles/role/'+role.id+'/delete' style="color:red") D
+                            a(href='/roles/role/'+role.id+'/training/modify')
+                                button.btn.btn-small.btn-blue(type='button')
+                        td(class='text-center')
+                            a(href='/roles/role/'+role.id+'/training/delete')
+                                button.btn.btn-small.btn-danger(type='button')
     else
-        li There are no roles for organization #{organization.name}
+        ul
+            li There are no roles for organization #{organization.name}

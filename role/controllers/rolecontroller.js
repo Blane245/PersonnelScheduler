@@ -1,8 +1,9 @@
 var Organization = require('../../models/organization');
 var Role = require('../../models/role');
+const Training = require('../../models/training');
 const { check, validationResult } = require('express-validator');
 var async = require('async');
-const organization = require('../../models/organization');
+const { training_list } = require('../../training/controllers/trainingController');
 
 // the list of roles for an organization
 exports.organization_role_list = function (req, res, next) {
@@ -217,3 +218,218 @@ exports.role_delete_post = function(req, res, next) {
         // }
     });
 };
+
+// the list of training requirments for role
+exports.role_training_list = function (req, res, next) {
+    async.parallel ({
+        // get the role that contains the training list
+        role: function (callback) {
+            Role.findById(req.params.id).populate('trainings').exec(callback);},
+    }, function (err, results) {
+        if (err) { return next(err); } 
+        roleName = results.role.name;
+
+        // display the training requirements list
+        res.render(
+            '../role/views/role_training_list', 
+            { title: "Training requirements for role '"+ roleName + "'",
+             role: results.role, 
+             trainings: results.role.trainings });
+
+    });
+
+};
+
+// Display role's training requirements create form on GET.
+exports.role_training_create_get = function(req, res, next) {
+
+    // get the role and all of the possble trainings could apply to that role
+    async.parallel ( {
+        role: function (callback) {
+            Role.findById(req.params.id).exec(callback);},
+        trainings: function (callback) {
+            Training.find ({}).exec(callback);},
+
+    },function (err, results) {
+        if (err) { return next(err);}
+
+        res.render('role_training_form', 
+            { title: "Add a training requirement for role '" + results.role.name + "'",
+            role: results.role, 
+            trainings: results.trainings, 
+            modify: false   });
+
+    }); 
+};
+
+// add a training requirement to a role POST
+exports.role_training_create_post = function (req, res, next) {
+
+    // load the current role record so it's training array can be updated
+    Role.findById(req.params.id).exec(function(err, role) {
+        if (err) { return next(err); }
+        if (role==null) {
+            var err = new Error('Role not found');
+            err.status = 404;
+            return next(err);
+        }
+
+        // add the new training requirement to the existing training list
+        role.trainings.push(req.body.training);
+        console.log('role trainings ' + role.trainings);
+
+        // create a new role record from the validiated and sanitized data.
+        var newRole = new Role ( {
+            trainings: role.trainings,
+            organization: role.organization,
+            name: role.name,
+            description: role.description,
+            _id: req.params.id
+        });
+        
+        // update the record and return to role training list
+        Role.findByIdAndUpdate(req.params.id, newRole, {}, function (err) {
+            if (err) { return next(err); }
+            res.redirect ('/roles/role/'+req.params.id+'/training');
+
+        });
+                   
+    });
+
+
+}
+
+// Display person's leave modify form on GET.
+exports.role_training_modify_get = function(req, res, next) {
+    async.parallel({
+        role: function(callback) {
+            Role.findById(req.params.id).populate('trainings').exec(callback);
+        },
+        trainings: function(callback) {
+            Training.find({}).exec(callback);
+        },
+        } ,function(err, results) {
+            if (err) { return next(err); }
+            if (results.role==null) {
+                var err = new Error('Role not found');
+                err.status = 404;
+                return next(err);
+            }
+            res.render('role_training_form', { 
+                title: "Modify training requirements for role '" + results.role.name + "'", 
+                role: results.role, 
+                trainings: results.trainings, 
+                trainingid: req.params.trainingid,
+                modify: true   });
+        }
+    );
+
+}
+// Display role training requirement modify form on POST.
+exports.role_training_modify_post = function (req, res, next) {
+
+    // load the current role record so it's training array can be updated
+    Role.findById(req.params.id).populate('trainings').exec(function(err, role) {
+        if (err) { return next(err); }
+        if (role==null) {
+            var err = new Error('Role not found');
+            err.status = 404;
+            return next(err);
+        }
+
+ 
+        // create a new role record from the validiated and sanitized data.
+        var newRole = new Role ( {
+            trainings: role.trainings,
+            organization: role.organization,
+            name: role.name,
+            description: role.description,
+            _id: req.params.id
+        });
+
+        // replace the current training requirement with the new one
+        console.log('role trainings ' + role.trainings);
+        for (i in role.trainings) {
+            console.log('this training ' + newRole.trainings[i]);
+            if (newRole.trainings[i].id == req.params.trainingid) {
+                newRole.trainings[i] = req.body.training;
+                break;
+            }
+        }
+        console.log('newrole trainings ' + newRole.trainings);
+        
+        // update the record and return to role training list
+        Role.findByIdAndUpdate(req.params.id, newRole, {}, function (err) {
+            if (err) { return next(err); }
+            res.redirect ('/roles/role/'+req.params.id+'/training');
+
+        });
+                   
+    });
+}
+
+exports.role_training_delete_get = function(req, res, next) {
+
+    async.parallel({
+        role: function(callback) {
+            Role.findById(req.params.id).exec(callback)
+        },
+        training: function(callback) {
+            Training.findById(req.params.trainingid).exec(callback)
+        },
+    }, function(err, results) {
+        if (err) { return next(err); }
+        if (results.role==null) { // No results.
+            res.redirect('/organizations');
+        }
+        if (results.training==null) { // No results.
+            res.redirect('/organizations');
+        }
+        // Successful, so render.
+        res.render('role_training_delete', { title: "Delete training for role '"+results.role.name+"'", 
+            role: results.role,
+            training: results.training } );
+    });
+
+};
+
+// TODO can't seem to locate correct training array element to remove???
+// Handle role delete on POST.
+exports.role_training_delete_post = function(req, res, next) {
+
+    async.parallel({
+        role: function(callback) {
+          Role.findById(req.params.id).exec(callback)
+        },
+    }, function(err, results) {
+        if (err) { return next(err); }
+
+         // create a new role record so the selected training requirement can be deleted from the array
+         var newRole = new Role ( {
+            trainings: results.role.trainings,
+            organization: results.role.organization,
+            name: results.role.name,
+            description: results.role.description,
+            _id: req.params.id
+        });
+
+        // remove the current training requirement with the new role record
+        console.log('role trainings ' + newRole.trainings);
+        for (i in newRole.trainings) {
+            console.log('this training ' + newRole.trainings[i]);
+            if (newRole.trainings[i].id == req.params.trainingid) {
+                newRole.trainings.splice(i, 1);
+                break;
+            }
+        }
+        console.log('newrole trainings ' + newRole.trainings);
+        
+        // update the record and return to role training list
+        Role.findByIdAndUpdate(req.params.id, newRole, {}, function (err) {
+            if (err) { return next(err); }
+            res.redirect ('/roles/role/'+req.params.id+'/training');
+
+        });
+    });
+};
+

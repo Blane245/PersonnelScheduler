@@ -1,0 +1,14 @@
+extends ../../views/layout
+
+block content
+  h1= title
+  h2= 'Name: ' + training.name
+  p= 'Description: ' + training.description
+
+  p Do you really want to delete this training requirement?
+
+  form(method='POST' action='')
+    div.form-group
+      input#trainingid.form-control(type='hidden',name='trainingid', required='true', value=training._id )
+
+    button.btn.btn-primary(type='submit') Delete
