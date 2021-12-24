@@ -1,9 +1,9 @@
+// TODO prevent changes to a role list for a job if there are already tasks for the job
 var Job = require('../../models/job');
 var Role = require('../../models/role');
 const { validationResult, body } = require('express-validator');
 var async = require('async');
 const organization = require('../../models/organization');
-const job = require('../../models/job');
 // Handle roles for a job form on GET.
 exports.job_roles_get = function(req, res, next) {
     async.parallel ({

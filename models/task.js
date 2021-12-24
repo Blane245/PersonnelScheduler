@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+const { DateTime } = require("luxon");
 
 var Schema = mongoose.Schema;
 
@@ -8,8 +9,7 @@ var TaskSchema = new Schema(
     name: {type: String, required: true},
     description: {type: String, required: false},
     startDate: {type: Date, required: true},
-    endStart: {type: Date, required: true},
-    roles: [{type: Schema.Types.ObjectId, ref: 'Role'}],
+    endDate: {type: Date, required: true},
     persons: [{type: Schema.Types.ObjectId, ref: 'Person'}]
   }
 );
@@ -34,4 +34,4 @@ TaskSchema
         return DateTime.fromJSDate(this.endDate).toFormat('yyyy-MM-dd');
 });
 
-module.exports = mongoose.model('Task', JobSchema);
+module.exports = mongoose.model('Task', TaskSchema);

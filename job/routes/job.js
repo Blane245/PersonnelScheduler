@@ -3,6 +3,7 @@ var router = express.Router();
 
 var job_controller = require('../controllers/jobController');
 var job_role_controller = require('../controllers/jobroleController');
+var task_controller = require('../../task/controllers/taskController');
 
 /* GET request for list of jobs in an organization */
 router.get('/:orgid', job_controller.organization_job_list);
@@ -34,5 +35,8 @@ router.get('/job/:id/role/add', job_role_controller.job_role_add_get);
 // FIXME not getting post when submitting job_role_add form
 /* Post request for adding a role to a job */
 router.post('/job/:id/role/add', job_role_controller.job_role_add_post);
+
+/* GET request for editing tasks for a job */
+router.get('/job/:id/tasks', task_controller.task_list_get);
 
 module.exports = router;

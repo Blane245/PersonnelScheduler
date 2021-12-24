@@ -1,0 +1,38 @@
+extends ../../views/layout
+//- TODO modify button is not showing
+block content
+    h1= title
+    - var addurl = '/tasks/job/' +job.id+ '/create/'
+    button(type='button' class='btn btn-large btn-primary') 
+        a(href=addurl style="color:white") Add Task
+    if task_list.length != 0
+        table(class='table' id='job-table')
+            thread 
+                tr 
+                th(class='text-left' scope='col') Name 
+                th(class='text-left' scope='col') Description 
+                th(class='text-left' scope='col') Start Date 
+                th(class='text-left' scope='col') End Date
+                th(class='text-center' scope='col') Assignments
+                th(class='text-center' scope='col') Modify
+                th(class='text-center' scope='col') Delete
+            tbody 
+
+                each task in task_list
+                    tr 
+                        td(class='text-left') #{task.name}
+                        td(class='text-left') #{task.description}
+                        td(class='text-left') #{task.startDate_formatted}
+                        td(class='text-left') #{task.endDate_formatted}
+                        td(class='text-center')
+                            a(href='/tasks/job/' +job.id+'/task/'+task.id+'/assign')
+                                button.btn.btn-small.btn-dark(type='button')
+                        td(class='text-center')
+                            a(href='/tasks/job/' +job.id+'/task/'+task.id+'/modify')
+                                button.btn.btn-small.btn-primary(type='button')
+                        td(class='text-center')
+                            a(href='/tasks/job/' +job.id+'/task/'+task.id+'/delete')
+                                button.btn.btn-small.btn-danger(type='button')
+    else
+        ul
+            li There are no tasks for job #{job.name}

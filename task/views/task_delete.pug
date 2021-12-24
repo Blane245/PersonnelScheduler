@@ -1,0 +1,14 @@
+extends ../../views/layout
+
+block content
+  h1= title
+  h2= 'Name: ' + task.name
+  h2= 'Description: ' + task.description
+
+  p Do you really want to delete this task?
+
+  form(method='POST' action='')
+    div.form-group
+      input#taskid.form-control(type='hidden',name='taskid', required='true', value=task._id )
+
+    button.btn.btn-primary(type='submit') Delete

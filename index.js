@@ -1,3 +1,6 @@
+// TODO clean up delete pages - straignten our title and headings
+// TODO enddate greater than start date validation
+// TODO normalize list pages - table format
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -9,8 +12,7 @@ var jobRouter = require('./job/routes/job.js');
 var roleRouter = require('./role/routes/role.js');
 var trainingRouter = require('./training/routes/training.js');
 var personRouter = require('./person/routes/person.js');
-// TODO Personnel Administration
-// TODO Task Management
+var taskRouter = require('./task/routes/task.js');
 var app = express();
 
 //pug view engine setup
@@ -20,7 +22,8 @@ app.set('views', [
   path.join(__dirname, 'job/views'),
   path.join(__dirname, 'role/views'),
   path.join(__dirname, 'training/views'),
-  path.join(__dirname, 'person/views')
+  path.join(__dirname, 'person/views'),
+  path.join(__dirname, 'task/views')
 ]);
 app.set('view engine', 'pug');
 
@@ -37,6 +40,7 @@ app.use('/jobs', jobRouter );
 app.use('/roles', roleRouter );
 app.use('/trainings', trainingRouter );
 app.use('/persons', personRouter );
+app.use('/tasks', taskRouter );
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

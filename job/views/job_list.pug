@@ -12,6 +12,7 @@ block content
                 th(class='text-center' scope='col') Name 
                 th(class='text-center' scope='col') Description 
                 th(class='text-center' scope='col') Roles 
+                th(class='text-center' scope='col') Tasks 
                 th(class='text-center' scope='col') Modify
                 th(class='text-center' scope='col') Delete
             tbody 
@@ -21,14 +22,17 @@ block content
                         td(class='text-left') #{job.name}
                         td(class='text-left') #{job.description}
                         td(class='text-center')
-                            //- button(type='button' class='btn btn-small btn-primary') 
-                            a(href='/jobs/job/'+job.id+'/roles' style="color:blue") R
+                            a(href='/jobs/job/'+job.id+'/roles')
+                                button.btn.btn-small.btn-dark(type='button')
                         td(class='text-center')
-                            //- button(type='button' class='btn btn-small btn-primary') 
-                            a(href='/jobs/job/'+job.id+'/modify' style="color:blue") M
+                            a(href='/jobs/job/'+job.id+'/tasks')
+                                button.btn.btn-small.btn-dark(type='button')
                         td(class='text-center')
-                            //- button(type='button' class='btn btn-small btn-danger') 
-                            a(href='/jobs/job/'+job.id+'/delete' style="color:red") D
+                            a(href='/jobs/job/'+job.id+'/modify')
+                                button.btn.btn-small.btn-blue(type='button')
+                        td(class='text-center')
+                            a(href='/jobs/job/'+job.id+'/delete')
+                                button.btn.btn-small.btn-danger(type='button')
     else
         ul
             li There are no jobs for organization #{organization.name}

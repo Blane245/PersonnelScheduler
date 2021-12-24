@@ -1,0 +1,43 @@
+extends ../../views/layout
+
+block content
+    h1= title
+    form(method='POST' action='' novalidate )
+        div.form-group 
+            label(for='name') Task Name: 
+            input#name.form-control(
+                name='name'
+                type='text' 
+                placeholder='Name of task'
+                required='true' 
+                value=(undefined===task ? '' : task.name))        
+            label(for='description') Task Description: 
+            input#description.form-control(
+                name='description'
+                type='text' 
+                placeholder='Task description'
+                required='true' 
+                value=(undefined===task ? '' : task.description))        
+            div(class='row')
+                div(class='col-sm-4')
+                    label(for='startDate') Start Date: 
+                    input#startDate.form-control(
+                        name='startDate'
+                        type='date' 
+                        required='true' 
+                        value=(undefined===task ? '' : task.startDate_formatted))        
+                div(class='col-sm-4')
+                    label(for='endDate') End Date: 
+                    input#endDate.form-control(
+                        name='endDate'
+                        type='date' 
+                        required='false' 
+                        value=(undefined===task ? '' : task.endDate_formatted))        
+        button.btn.btn-primary(type='submit' name='save' value='save') Save
+        br
+        br
+        button.btn.btn-primary(type='submit' name='assign' value='assign') Save and Make Role Assignments
+    if errors 
+        ul  
+            for error in errors 
+                li!= error.msg

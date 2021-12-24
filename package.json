@@ -1,7 +1,7 @@
 {
   "name": "personnelscheduler",
   "version": "1.0.0",
-  "description": "Management of organizaiotnal job, roles, personnel, their training, and tasks to be performed",
+  "description": "Management of organizations, jobs, roles, personnel, their training, and tasks to be performed",
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

@@ -5,8 +5,6 @@ var Training = require('../../models/training');
 var Person_Training = require('../../models/person_training');
 const { body, validationResult } = require('express-validator');
 var async = require('async');
-const { find } = require('../../models/organization');
-const person = require('../../models/person');
 
 exports.organization_person_list = function (req, res, next) {
     async.parallel ({

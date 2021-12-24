@@ -1,0 +1,36 @@
+extends ../../views/layout
+
+block content
+    h1= title
+    form(method='POST' action='' novalidate )
+        //- loop through each role 
+        if roles && roles.length != 0 
+            var irole = 0
+            div.form-group 
+                for role in roles 
+                    hr
+                    h2= 'Role: ' + role.name 
+                    hr
+
+                    //- loop through each person in the organization building a radio button list
+                    //- and indicating is they are qualified, available, and selected
+                    for person in role.persons 
+                        div.form-group
+                            if (person.selected)
+                                input(type='radio' id='#{person.id}' name='Role#{irole}' value='#{person.id}' checked='checked')
+                            else
+                                input(type='radio' id='#{person.id}' name='Role#{irole}' value='#{person.id}')
+                            if (person.qualified && person.avaiable)
+                                label.white(for='#{person.id}') {person.fullName}
+                            else if (person.qualified && !person.available)
+                                label.green(for='#{person.id}') {person.fullName}
+                            else if (!person.qualified && person.avaiable)
+                                label.orange(for='#{person.id}') {person.fullName}
+                            else if (!person.qualified && !person.avaiable)
+                                label.red(for='#{person.id}') {person.fullName}
+                irole= irole+1
+        button.btn.btn-primary(type='submit' name='save' value='save') Save
+    if errors 
+        ul  
+            for error in errors 
+                li!= error.msg

@@ -1,34 +1,44 @@
-const { body,validationResult } = require('express-validator');
 var async = require('async');
+var Organization = require('../models/organization');
+var Job = require('../models/job');
+var Person = require('../models/person');
+var Role = require('../models/role');
+var Task = require('../models/task');
+var Training = require('../models/training');
+var Leave = require('../models/leave');
 
 exports.index = function(req, res, next) {
-    // display the entry page
-    console.log('ready to render index');
-    res.render('index', {title: 'Personnel Scheduler'});
+    async.parallel({
+        organization_count: function(callback) {
+            Organization.countDocuments({}, callback);
+        },
+        
+        job_count: function(callback) {
+            Job.countDocuments({}, callback);
+        },
+        
+        person_count: function(callback) {
+            Person.countDocuments({}, callback);
+        },
+        
+        role_count: function(callback) {
+            Role.countDocuments({}, callback);
+        },
+        
+        task_count: function(callback) {
+            Task.countDocuments({}, callback);
+        },
+        
+        leave_count: function(callback) {
+            Leave.countDocuments({}, callback);
+        },
+        
+        training_count: function(callback) {
+            Training.countDocuments({}, callback);
+        },
+        
+    }, function (err, results){
+        res.render('index', {title: 'Personnel Scheduler', results: results });
 
+    });
 }
-
-// exports.index = function(req, res) {
-
-    // async.parallel({
-    //     book_count: function(callback) {
-    //         Book.countDocuments({}, callback); // Pass an empty object as match condition to find all documents of this collection
-    //     },
-    //     book_instance_count: function(callback) {
-    //         BookInstance.countDocuments({}, callback);
-    //     },
-    //     book_instance_available_count: function(callback) {
-    //         BookInstance.countDocuments({status:'Available'}, callback);
-    //     },
-    //     author_count: function(callback) {
-    //         Author.countDocuments({}, callback);
-    //     },
-    //     genre_count: function(callback) {
-    //         Genre.countDocuments({}, callback);
-    //     }
-    // }, function(err, results) {
-    //     console.log(err);
-    //     res.render('index', { title: 'Personnel Scheduler', error: err, data: results });
-    // });
-// };
-
