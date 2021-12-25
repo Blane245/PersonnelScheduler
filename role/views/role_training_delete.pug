@@ -2,10 +2,9 @@ extends ../../views/layout
 
 block content
   h1= title
-  h2= 'Name: ' + training.name
-  p= 'Description: ' + training.description
+  h2= 'Description: ' + training.description
 
-  p Do you really want to delete this training requirement?
+  p Do you really want to remove this training requirement for the job?
 
   form(method='POST' action='')
     div.form-group

@@ -154,7 +154,9 @@ exports.organization_delete_get = function(req, res, next) {
             res.redirect('/catalog/organizations');
         }
         // Successful, so render.
-        res.render('organization_delete', { title: 'Delete organization (without children checking', organization: results.organization } );
+        res.render('organization_delete', { 
+            title: "Delete organization '"+results.organization.name+"'",
+            organization: results.organization } );
     });
 
 };

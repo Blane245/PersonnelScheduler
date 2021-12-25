@@ -168,7 +168,7 @@ exports.job_delete_get = function(req, res, next) {
 
     async.parallel({
         job: function(callback) {
-            Job.findById(req.params.id).exec(callback)
+            Job.findById(req.params.id).populate('organization').exec(callback)
         },
         // organizations_books: function(callback) {
         //   Book.find({ 'organization': req.params.id }).exec(callback)
@@ -180,7 +180,9 @@ exports.job_delete_get = function(req, res, next) {
         }
         req.body.org = results.job.organization;
         // Successful, so render.
-        res.render('job_delete', { title: 'Delete job (without children bodying)', job: results.job } );
+        res.render('job_delete', { 
+            title: "Delete job '" + results.job.name + "' from organization '" + results.job.organization.name + "'",
+            job: results.job } );
     });
 
 };

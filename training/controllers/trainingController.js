@@ -135,7 +135,9 @@ exports.training_delete_get = function(req, res, next) {
             res.redirect('/catalog/trainings');
         }
         // Successful, so render.
-        res.render('training_delete', { title: 'Delete training (without children checking', training: results.training } );
+        res.render('training_delete', { 
+            title: "'Delete training '" + results.training.name + "'",
+            training: results.training } );
     });
 
 };
@@ -147,22 +149,10 @@ exports.training_delete_post = function(req, res, next) {
         training: function(callback) {
           Training.findById(req.body.trainingid).exec(callback)
         },
-        // trainings_books: function(callback) {
-        //   Book.find({ 'training': req.body.trainingid }).exec(callback)
-        // },
     }, function(err, results) {
         if (err) { return next(err); }
-        // Success
-        // if (results.trainings_books.length > 0) {
-        //     // training has books. Render in same way as for GET route.
-        //     res.render('training_delete', { title: 'Delete training (delete children first)', training: results.training, training_books: results.trainings_books } );
-        //     return;
-        // }
-        // else {
-            // training has no children. Delete object and redirect to the list of trainings.
             Training.findByIdAndRemove(req.body.trainingid, function deletetraining(err) {
                 if (err) { return next(err); }
-                // Success - go to training list
                 res.redirect('/trainings')
             })
         // }

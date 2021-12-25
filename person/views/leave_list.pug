@@ -26,10 +26,10 @@ block content
                         td(class='text-left') #{leave.endDate_formatted}
                         td(class='text-left') #{leave.duration}
                         td(class='text-center')
-                            a(href='/persons/person/'+leave.id+'/leave/modify')
+                            a(href='/persons/person/'+person.id+'/leave/'+leave.id+'/modify')
                                 button.btn.btn-small.btn-primary(type='button')
                         td(class='text-center')
-                            a(href='/persons/person/'+leave.id+'/leave/delete')
+                            a(href='/persons/person/'+person.id+'/leave/'+leave.id+'/delete')
                                 button.btn.btn-small.btn-danger(type='button')
     else
         ul

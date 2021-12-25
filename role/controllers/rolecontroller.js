@@ -180,11 +180,8 @@ exports.role_delete_get = function(req, res, next) {
 
     async.parallel({
         role: function(callback) {
-            Role.findById(req.params.id).exec(callback)
+            Role.findById(req.params.id).populate('organization').exec(callback)
         },
-        // organizations_books: function(callback) {
-        //   Book.find({ 'organization': req.params.id }).exec(callback)
-        // },
     }, function(err, results) {
         if (err) { return next(err); }
         if (results.role==null) { // No results.
@@ -192,7 +189,9 @@ exports.role_delete_get = function(req, res, next) {
         }
         req.body.org = results.role.organization;
         // Successful, so render.
-        res.render('role_delete', { title: 'Delete role (without children checking)', role: results.role } );
+        res.render('role_delete', { 
+            title: "Delete role '" + results.role.name + "'" + " from organization '" + results.role.organization.name + "'",
+            role: results.role } );
     });
 
 };
@@ -204,9 +203,6 @@ exports.role_delete_post = function(req, res, next) {
         role: function(callback) {
           Role.findById(req.params.id).exec(callback)
         },
-        // organizations_books: function(callback) {
-        //   Book.find({ 'organization': req.body.organizationid }).exec(callback)
-        // },
     }, function(err, results) {
         if (err) { return next(err); }
             // role has no children. Delete object and redirect to the list of roles for its organization.
@@ -386,7 +382,8 @@ exports.role_training_delete_get = function(req, res, next) {
             res.redirect('/organizations');
         }
         // Successful, so render.
-        res.render('role_training_delete', { title: "Delete training for role '"+results.role.name+"'", 
+        res.render('role_training_delete', { 
+            title: "Delete training '" + results.training + "' from role '" + results.role.name +"'", 
             role: results.role,
             training: results.training } );
     });

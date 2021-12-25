@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var person_controller = require('../controllers/personController');
+// TODO restes because of several changes
 
 /* GET request for list of persons in an organization */
 router.get('/:orgid', person_controller.organization_person_list);
@@ -33,16 +34,16 @@ router.get('/person/:id/leave/create', person_controller.person_leave_create_get
 router.post('/person/:id/leave/create', person_controller.person_leave_create_post);
 
 /* GET request for modifying leave */
-router.get('/person/:id/leave/modify', person_controller.person_leave_modify_get);
+router.get('/person/:id/leave/:leaveid/modify', person_controller.person_leave_modify_get);
 
 /* POST request for modfying leave */
-router.post('/person/:id/leave/modify', person_controller.person_leave_modify_post);
+router.post('/person/:id/leave/:leaveid/modify', person_controller.person_leave_modify_post);
 
 /* GET request for deleting person's leave */
-router.get('/person/:id/leave/delete', person_controller.person_leave_delete_get);
+router.get('/person/:id/leave/:leaveid/delete', person_controller.person_leave_delete_get);
 
 /* POST request for deleting a person's leave */
-router.post('/person/:id/leave/delete', person_controller.person_leave_delete_post);
+router.post('/person/:id/leave/:leaveid/delete', person_controller.person_leave_delete_post);
 
 /* GET request for handling a person's leave */
 router.get('/person/:id/person_training', person_controller.person_training_list);
@@ -54,15 +55,15 @@ router.get('/person/:id/person_training/create', person_controller.person_traini
 router.post('/person/:id/person_training/create', person_controller.person_training_create_post);
 
 /* GET request for modifying person_training */
-router.get('/person/:id/person_training/modify', person_controller.person_training_modify_get);
+router.get('/person/:id/person_training/:trainingid/modify', person_controller.person_training_modify_get);
 
 /* POST request for modfying person_training */
-router.post('/person/:id/person_training/modify', person_controller.person_training_modify_post);
+router.post('/person/:id/person_training/:trainingid/modify', person_controller.person_training_modify_post);
 
 // /* GET request for deleting person's person_training */
-// router.get('/person/:id/person_training/delete', person_controller.person_training_delete_get);
+// router.get('/person/:id/person_training/:trainingid/delete', person_controller.person_training_delete_get);
 
 // /* POST request for deleting a person's person_training */
-// router.post('/person/:id/person_training/delete', person_controller.person_training_delete_post);
+// router.post('/person/:id/person_training/:trainingid/delete', person_controller.person_training_delete_post);
 
 module.exports = router;

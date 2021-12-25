@@ -182,14 +182,16 @@ exports.person_modify_post = [
 // TODO prevent deletion when person has related tasks
 exports.person_delete_get = function(req, res, next) {
 
-    Person.findById(req.params.id)
+    Person.findById(req.params.id).populate('organization')
     .exec(function(err, person) {
         if (err) { return next(err); }
         if (person==null) { // No results.
             res.redirect('/organizations');
         }
         // Successful, so render.
-        res.render('person_delete', { title: 'Delete person (without children bodying)', person: person } );
+        res.render('person_delete', { 
+            title: "Delete person '" + person.fullName + "' from organization '" + person.organization.name + "'",
+            person: person } );
     });
 
 };
@@ -506,6 +508,7 @@ exports.person_training_create_post = [
 
 ];
 
+//TODO test person/training modify and delete
 // Display person's training modify form on GET.
 exports.person_training_modify_get = function(req, res, next) {
     async.parallel({

@@ -5,13 +5,16 @@ block content
 
   button(type='button' class='btn btn-large btn-primary') 
     a(href='organizations/create' style="color:white") Add Organization 
+  p
   if organization_list.count != 0
     table(class='table' id='org-table')
       thread 
         tr 
-          th(class='text-center' scope='col') Name 
-          th(class='text-center' scope='col') Description 
-          th(class='text-center' scope='col') Roles / Jobs / Personnel
+          th(class='text-left' scope='col') Name 
+          th(class='text-left' scope='col') Description 
+          th(class='text-center' scope='col') Roles 
+          th(class='text-center' scope='col') Jobs
+          th(class='text-center' scope='col') Personnel
           th(class='text-center' scope='col') Modify 
           th(class='text-center' scope='col') Delete 
       tbody 
@@ -20,18 +23,19 @@ block content
             td(class='text-left') #{org.name}
             td(class='text-left') #{org.description}
             td(class='text-center')
-              //- button(type='button' class='btn btn-small btn-dark' href='jobs/'+org.id) J
               a(href='roles/'+org.id)  
                 button.btn.btn-small.btn-dark(type='button')
+            td(class='text-center')
               a(href='jobs/'+org.id)   
                 button.btn.btn-small.btn-dark(type='button')
+            td(class='text-center')
               a(href='persons/'+org.id) 
                 button.btn.btn-small.btn-dark(type='button')
             td(class='text-center')
-              //- button(type='button' class='btn btn-small btn-primary') 
-              a(href='organizations/organization/'+org.id+'/modify' style="color:blue") M
+              a(href='organizations/organization/'+org.id+'/modify' style="color:blue")
+                button.btn.btn-small.btn-primary(type='button')
             td(class='text-center')
-              //- button(type='button' class='btn btn-small btn-danger') 
-              a(href='organizations/organization/'+org.id+'/delete' style="color:red") D
+              a(href='organizations/organization/'+org.id+'/delete' style="color:red")
+                button.btn.btn-small.btn-danger(type='button')
   else
     li There are no organizations

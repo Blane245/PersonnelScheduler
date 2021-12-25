@@ -386,7 +386,7 @@ exports.task_delete_get = function(req, res, next) {
     }, function(err, results) {
         if (err) { return next(err); }
         res.render('task_delete', { 
-            title: "Delete task '" + results.task.name + "' from Job '" + results.job.name + "'" ,
+            title: "Delete task '" + results.task.name + "' from job '" + results.job.name + "'" ,
             task: results.task} );
     });
 

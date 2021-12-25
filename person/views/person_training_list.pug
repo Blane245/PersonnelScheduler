@@ -22,10 +22,10 @@ block content
                         td(class='text-left') #{person_training.training.name}
                         td(class='text-left') #{person_training.expirationDate_formatted}
                         td(class='text-center')
-                            a(href='/persons/person/'+person_training.id+'/person_training/modify')
+                            a(href='/persons/person/'+person.id+'/person_training/'+person_training.id+'/modify')
                                 button.btn.btn-small.btn-primary(type='button')
                         td(class='text-center')
-                            a(href='/persons/person/'+person_training.id+'/person_training/delete')
+                            a(href='/persons/person/'+person.id+'/person_training/'+person_training.id+'/delete')
                                 button.btn.btn-small.btn-danger(type='button')
     else
         ul
