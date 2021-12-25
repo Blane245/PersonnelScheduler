@@ -5,15 +5,13 @@ block content
     - var addurl = '/jobs/job/'+job.id+'/role/add'
     a(href=addurl)
         button.btn.btn-large.btn-primary Add Role to Job
-    //- button(type='button' class='btn btn-large btn-primary') 
-    //-     a(href=addurl style="color:white") Add Role
-    if role_list
+    if rolelist
         table(class='table' id='job-table')
             thread 
                 tr 
-                th(class='text-center' scope='col') Name 
-                th(class='text-center' scope='col') Description 
-                th(class='text-center' scope='col') Remove
+                    th(class='text-left' scope='col') Name 
+                    th(class='text-left' scope='col') Description 
+                    th(class='text-center' scope='col') Remove
             tbody 
 
                 each role in rolelist
@@ -21,8 +19,8 @@ block content
                         td(class='text-left') #{role.name}
                         td(class='text-left') #{role.description}
                         td(class='text-center')
-                            //- button(type='button' class='btn btn-small btn-danger') 
-                            a(href='/jobs/job/'+role.id+'/role/delete' style="color:red") R
+                            a(href='/jobs/job/'+job.id+'/role/'+role.id+'/delete' style="color:red")
+                                button(type='button' class='btn btn-small btn-danger') 
     else
         ul
             li There are no roles for job #{job.name}

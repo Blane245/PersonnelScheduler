@@ -4,7 +4,7 @@ const { body, validationResult } = require('express-validator');
 var async = require('async');
 const organization = require('../../models/organization');
 const job = require('../../models/job');
-// TODO implement the many to many relationship with roles.
+
 // the list of jobs for an organization
 exports.organization_job_list = function (req, res, next) {
     async.parallel ({
@@ -79,7 +79,6 @@ exports.job_create_post = [
             } else {
                 
                 // data is valid and sanitized. save it
-                console.log('saving job record');
                 job.save(function (err) {
                     if (err) { return next (err);}
                     res.redirect('/jobs/'+req.body.orgId);
@@ -108,7 +107,8 @@ exports.job_modify_get = function(req, res, next) {
             }
             res.render('job_form', { 
                 title: 'Modify Job', 
-                job: results.job});    
+                job: results.job});
+            req.session.errors = null;
         }
     );
 

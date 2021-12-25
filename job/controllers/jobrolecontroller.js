@@ -4,12 +4,14 @@ var Role = require('../../models/role');
 const { validationResult, body } = require('express-validator');
 var async = require('async');
 const organization = require('../../models/organization');
+const { syncIndexes } = require('../../models/organization');
 // Handle roles for a job form on GET.
 exports.job_roles_get = function(req, res, next) {
     async.parallel ({
         // get the job object for this group of roles
         job: function (callback) {
-            Job.findById(req.params.id).exec(callback);},
+            Job.findById(req.params.id).populate('role').exec(callback);},
+        
     }, function (err, results) {
         if (err) { return next(err); }
         res.render(
@@ -17,7 +19,7 @@ exports.job_roles_get = function(req, res, next) {
             { title: "Role List for Job '"+ results.job.name + "'",
              orgId: results.job.organization.id,
              job: results.job, 
-             role_list: job.role });
+             rolelist: results.job.role });
 
     });
 };
@@ -28,85 +30,125 @@ exports.job_role_add_get = function(req, res, next) {
     // that the user can select from 
     // the job is req.param.id and its organization is job.organization.id
     // the list of possible roles are those owned by the organization
-    
-    // get the job so the org known
-    Job.findById(req.params.id).populate('organization')
-    .exec(function (err, job){
-        if (err) { return next(err);}
-
-        // now get the list of roles for this organization
-        Role.find({ 'organization': job.organization })
-        .exec(function (err, roles) {
-            if (err) { return next(err);}
-
-            // render the add role to job form with the role drop down list
+    async.parallel(
+        {
+            job: function(callback) {
+                Job.findById(req.params.id).exec(callback);
+            },
+            roles: function(callback) {
+                Role.find({'job': req.params.id}).exec(callback);
+            },
+        }, 
+        function(err, results) {
+            if (err) { return next(err); }
             res.render ('../job/views/job_role_add', {
-                title: 'Select a role to add to the job',
-                job: job,
-                roles: roles }
+                title: "Select a role to add to Job '"+results.job.name+"'",
+                job: results.job,
+                roles: results.roles }
                 );
-        });
-    });
-        
+        }
+    );        
 }
 
 // Handle add role to job delete on POST.
 exports.job_role_add_post = [
     
     // validate that a role was selected
-    body('role', 'Role must not be empty').trim().isLength({ min : 1}).escape,
+    body('role', 'Role must not be empty').trim().isLength({ min : 1}).escape(),
 
     // process the validated request
     (req, res, next) => {
 
         const errors = validationResult(req);
-        // check for errors (no role selected)
-        if (errors.isEmpty()) {
- 
-            // locate the role record selected
-            Role.findById(req.params.role)
-            .exec(function (err, role) {
-                if (err) { return next(err);}
+
+        // get the job record being updated
+        Job.findById(req.params.id).exec(function(err, job) {
+            if (err) {return next(err);}
+
+            // create a new job record from the current one
+            newjob = new Job ( {
+                name: job.name,
+                organization: job.organization,
+                description: job.description,
+                role: job.role, 
+                _id: req.params.id});
+
+            // check for errors (no role selected)
+            if (errors.isEmpty()) {
 
                 // update the role list with the this role
-                var roles = job.role;
-                roles = roles.push(req.body.role);
+                newjob.role.push(req.body.role);
 
-                // locate the job record so it can be modifid
-                Job.findById (req.params.id)
-                .exec (function (err, job) {
+                // update the job record with the new role added and display the job's role list
+                Job.findByIdAndUpdate (req.params.id, 
+                    newjob, {}, 
+                    function(err) {
+                        if (err) { return next(err); }
+                        res.redirect ('/jobs/job/'+req.params.id+'/roles');
+                    } 
+                );
 
-                    // create a new job record from the current one
-                    // the the role array updated
-                    newjob = new Job ( {
-                        name: job.name,
-                        organization: job.organization,
-                        description: job.description,
-                        role: roles, 
-                        _id: req.params.id});
+            } else {
+                    // redisplay the add form with the error messages
+                    res.render('jobs/job/'+req.params.id+'/role/add', {
+                        title: "Select a role to add to Job'"+results.job.name+"'",
+                        job: newjob,
+                        roles: req.params.roles,
+                        errors: errors.array() });
 
-                    });
+                }
+            });
+    }
+]
 
-                    // update the job record with the new role added and display the job's role list
-                    Job.findByIdAndUpdate (req.params.id, 
-                        newjob, {}, 
-                        function(err, thejob) {
-                            if (err) { return next(err); }
-                            res.redirect ('job/'+req.params.id+'/roles');
-                        } 
-                    );
+// Display role delete from job form on GET.
+exports.job_role_delete_get = function(req, res, next) {
+    async.parallel(
+        {
+            job: function(callback) {
+                Job.findById(req.params.id).exec(callback);
+            },
+            role: function(callback) {
+                Role.findById(req.params.roleid).exec(callback);
+            },
+        }, 
+        function(err, results) {
+            if (err) { return next(err); }
+            res.render ('../job/views/job_role_delete', {
+                title: "Remove role '"+results.role.name+"' from job '" +results.job.name+"'",
+                job: results.job,
+                role: results.role }
+                );
+        }
+    );        
+}
 
-                });
+// process the role delete from job POST
+exports.job_role_delete_post = function(req, res, next) {
+    Job.findById(req.params.id).exec(function (err, job) {
 
-           } else {
-
-                // redisplay the add form with the error messages
-                res.render('/job/'+req.params.id+'/role/add', {
-                    title: 'Select a role to add to the job', 
-                    job: job,
-                    roles: req.params.roles,
-                    errors: errors.array() });
-
+        // build a new job record from the current on
+        newJob = new Job ({
+            name: job.name,
+            description: job.description,
+            organization: job.organization,
+            role: job.role,
+            _id: job.id});
+        
+        // find the role in job's role array that matches that being deleted
+        for (var i = 0; i < job.role.length; i++) {
+            if (req.params.roleid == job.role[i]) {
+                newJob.role.splice(i, 1);
+                break;
             }
         }
-]
+
+        // update the job record
+        Job.findByIdAndUpdate(req.params.id, newJob, {}, function (err) {
+            if (err) { return next(err); }
+            res.redirect ('/jobs/job/'+req.params.id+'/roles');
+        });
+
+
+    });
+}

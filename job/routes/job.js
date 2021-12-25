@@ -32,9 +32,14 @@ router.get('/job/:id/roles', job_role_controller.job_roles_get);
 /* GET request for adding a role to a job */
 router.get('/job/:id/role/add', job_role_controller.job_role_add_get);
 
-// FIXME not getting post when submitting job_role_add form
 /* Post request for adding a role to a job */
 router.post('/job/:id/role/add', job_role_controller.job_role_add_post);
+
+/* GET request for deleting a role from a job */
+router.get('/job/:id/role/:roleid/delete', job_role_controller.job_role_delete_get);
+
+/* Post request for deleting a role from a job */
+router.post('/job/:id/role/:roleid/delete', job_role_controller.job_role_delete_post);
 
 /* GET request for editing tasks for a job */
 router.get('/job/:id/tasks', task_controller.task_list_get);
