@@ -1,7 +1,7 @@
+// TODO prevent addition of duplicates - organization, job, role, person (in organization), training, task (in job)
 // TODO implement checks for children before allowing delete (organization, person, role, job)
 // TODO check for relationships before allowing modify and delete (job/role, person/task)
-// TODO start and end dates 'walking'
-// TODO enddate greater than start date validation
+// TODO dates 'walking'
 // TODO normalize list pages - table format
 // TODO - implement copy function for job to replicate another one with roles
 // TODO - implement move role up and down job list

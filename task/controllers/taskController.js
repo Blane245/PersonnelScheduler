@@ -51,7 +51,7 @@ exports.task_create_get = function(req, res, next) {
     Job.findById(req.params.id)
         .exec(function (err, job) {
         if (err) { return next(err);}
-        res.render('task_form', { title: 'Create Task for Job "' + job.name + '"'});
+        res.render('task_form', { title: "Create Task for Job '" + job.name + "'"});
 
     });
 };
@@ -61,13 +61,18 @@ exports.task_create_post = [
     // display must handle two different buttons
     // Save - save the task record without making personnel assignment
     // Assign - save the task record and then present a dialog to make personnel assignments to roles
-
     // first to a save
     // validate and sanitize fields
-    body('name', 'Name must not be empty.').trim().isLength({min: 1}).escape(),
-    body('description', '').trim().escape(),
-    body('startDate', 'Start Date must be a valid.').toDate(),
-    body('endDate', 'End Date must be a valid.').toDate(),
+    body('name', 'Name must not be empty.').trim().isLength({min: 1}),
+    body('description', '').trim(),
+    body('startDate', 'Start Date must be a valid date.').isDate(),
+    body('endDate', 'End Date must be a valid date.').isDate()
+    .custom((value, { req }) => {
+        if (value < req.body.startDate) {
+            throw new Error('End Date must be greater than or equal to Start Date.');
+        }
+        return true;
+    }),
     // prevent a new job from having the same name as a current one
 
     // save the new task
@@ -78,7 +83,7 @@ exports.task_create_post = [
             if (err) { return next(err);}
 
             // create an task object with escaped and trimmed data
-            var task = new Task (
+            var task = new Task ( 
                 { name: req.body.name,
                     description: req.body.description,
                     startDate: req.body.startDate,
@@ -90,19 +95,13 @@ exports.task_create_post = [
             const errors = validationResult(req);
             
             if (!errors.isEmpty()) {
-                console.log('Error while saving task: ' + req.body.name);
-
                 res.render('task_form', {
-                    title: "Create Task for Job'" + job.name + "'", 
-                    name:req.body.name, 
-                    description:req.body.description,
-                    startDate: req.body.startDate,
-                    endDate: req.body.endDate,
+                    title: "Create Task for Job '" + job.name + "'", 
+                    task: task,
                     errors: errors.array() });
             } else {
                 
                 // data is valid and sanitized. save it
-                console.log('saving task record');
                 task.save(function (err) {
                     if (err) { return next (err);}
                     req.params.taskid = task.id;
@@ -146,11 +145,16 @@ exports.task_modify_get = function(req, res, next) {
 
 exports.task_modify_post = [
     // validate and sanitze fields.
-    body('name', 'Name must not be empty.').trim().isLength({min: 1}).escape(),
-    body('startDate', 'Start date must be a valid date.').trim().isDate().escape(),
-    // TODO end date must be >= startdate
-    body('endDate', 'End date must be a valid date.').trim().isDate().escape(),
-    body('description', '').trim().escape(),
+    body('name', 'Name must not be empty.').trim().isLength({min: 1}),
+    body('startDate', 'Start date must be a valid date.').isDate(),
+    body('description', '').trim(),
+    body('endDate', 'End Date must be a valid date.').isDate()
+    .custom((value, { req }) => {
+        if (value < req.body.startDate) {
+            throw new Error('End Date must be greater than or equal to Start Date.');
+        }
+        return true;
+    }),
 
     // process request after validation and sanittzation
     (req, res, next) => {
@@ -171,8 +175,8 @@ exports.task_modify_post = [
             
             if (!errors.isEmpty()) {
                 res.render('task_form', { 
-                    title: "Modify Task '" + results.task.name + "' for Job '"+results.job.name+"'", 
-                    task: results.task,    
+                    title: "Modify Task '" + newTask.name + "'", 
+                    task: newTask,    
                     errors: errors.array() });
             } else {
                 // data is valid. update the record

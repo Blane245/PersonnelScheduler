@@ -256,11 +256,13 @@ exports.person_leave_create_post = [
     // validate and sanitize fields
     body('name', 'Leave name must be given.').trim().isLength({min: 1}).escape(),
     body('startDate', 'Start Date must be a valid.').toDate(),
-    body('endDate', 
-        'End Date must be a valid date. If provided, it muust be greater than or equal to the Start Date.')
-        .optional({nullable: true, checkFalsy: true}).bail()
-        .custom((value, {req}) => value < req.body.startDate)
-        .toDate(),
+    body('endDate', 'End Date must be a valid date.').isDate()
+    .custom((value, { req }) => {
+        if (value < req.body.startDate) {
+            throw new Error('End Date must be greater than or equal to Start Date.');
+        }
+        return true;
+    }),
     body('duration', '').escape(),
 
     // save the new leave
@@ -325,18 +327,19 @@ exports.person_leave_modify_get = function(req, res, next) {
     );
 
 }
-// TODO startDate is decrementing on each redisplay and endDate validation is not working
 // also validation errors are not clearing 
 // Display person's leave modify form on POST.
 exports.person_leave_modify_post = [
     // validate and sanitize fields.
     body('name', 'Leave name must not be empty.').trim().isLength({min: 1}).escape(),
     body('startDate', 'Start Date must be a valid.').toDate(),
-    body('endDate', 
-        'End Date must be a valid date. If provided, it must be greater than or equal to the Start Date.')
-        .optional({nullable: true, checkFalsy: true}).bail()
-        .custom((value, {req}) => value < req.body.startDate)
-        .toDate(),
+    body('endDate', 'End Date must be a valid date.').isDate()
+    .custom((value, { req }) => {
+        if (value < req.body.startDate) {
+            throw new Error('End Date must be greater than or equal to Start Date.');
+        }
+        return true;
+    }),
     body('duration', '').escape(),
 
     // process request after validation and sanittzation
@@ -536,8 +539,6 @@ exports.person_training_modify_get = function(req, res, next) {
     );
 
 }
-// TODO expirationDate is decrementing on each redisplay
-// also validation errors are not clearing 
 // Display person's training record modify form on POST.
 exports.person_training_modify_post = [
     // validate and sanitize fields.

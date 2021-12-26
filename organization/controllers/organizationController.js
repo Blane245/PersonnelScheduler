@@ -4,7 +4,6 @@ var async = require('async');
 const organization = require('../../models/organization');
 
 exports.organization_list = function (req, res, next) {
-    console.log('in organization_list controller');
     Organization.find({}, 'name description')
         .sort({name: 1})
         .exec(function (err, list_organizations) {
@@ -31,22 +30,6 @@ exports.organization_create_post = [
     // validate and sanitize fields
     check('name', 'Name must not be empty.').trim().isLength({min: 1}).escape(),
     check('description', '').trim().escape(),
-    // prevent a new organization from having the same name as a current one
-    // (req, res, next) => {
-    //     const errors = validationResult(req);
-    //     console.log('checking for matching org');
-    //     // check for duplicate name and escape if there is one
-    //     Organization.exists({name:req.body.name.trim()}, function (err, doc) {
-    //         // anError = new Error('An organization with that name already exists');
-    //         // anError.statusCode = 403;
-    //         res.render('organization_form', {
-    //             title: 'Create Organization', 
-    //             name: req.body.name.trim(), 
-    //             description: req.body.description.trim(),
-    //             errors: [new ValidationError() });
-
-    //     });
-    // },
 
     // save the new organization
     (req, res, next) => {
