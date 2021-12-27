@@ -10,19 +10,18 @@ exports.organization_job_list = function (req, res, next) {
     async.parallel ({
         // get the organization object for this group of jobs
         organization: function (callback) {
-            Organization.findById(req.params.orgid).exec(callback);},
+            Organization.findById(req.params.orgId).exec(callback);},
         // get the jobs for this organization
         jobs: function (callback) {
-            Job.find({ 'organization': req.params.orgid })
+            Job.find({ 'organization': req.params.orgId })
             .populate('organization')
             .exec(callback);
         },
     }, function (err, results) {
         if (err) { return next(err); }
-        orgName = results.organization.name;
         res.render(
             '../job/views/job_list', 
-            { title: "Job List for Organization '"+ orgName + "'",
+            { title: "Job List for Organization '"+ results.organization.name + "'",
              organization: results.organization, 
              job_list: results.jobs });
 
@@ -45,45 +44,45 @@ exports.job_create_post = [
     // validate and sanitize fields
     body('name', 'Name must not be empty.').trim().isLength({min: 1}).escape(),
     body('description', '').trim().escape(),
-    // body('organization', '').escape(),
-    // prevent a new job from having the same name as a current one
 
-    // save the new job
+    // save the new job unless there is a job for the organization already
     (req, res, next) => {
+
+        // Extract the validation errors from a request.
+        var errors = validationResult(req).array();
 
         // get the organization that this job is to belong to
         Organization.findById(req.params.orgId).exec(function(err, org) {
             if (err) { return next(err);}
-            req.body.orgId = org._id;
-            req.body.orgName = org.name;
-            req.body.org = org;
 
-            // create an job object with escaped and trimmed data
-            var job = new Job (
-                { name: req.body.name.trim(),
-                    description: req.body.description.trim(),
-                    organization: req.body.org
-                });
+            // check for duplicate job in this orgranization
+            Job.findOne({'name': req.body.name, 'organization': req.params.orgId}).exec (function (err, job) {
+                if (err) { return next(err)};
+                if (job) {
+                    errors.push({msg: 'A job with this name already exist for this organization.'});
+                }
 
-            // Extract the validation errors from a request.
-            const errors = validationResult(req);
-            
-            if (!errors.isEmpty()) {
-                console.log('Error while saving job: ' + req.body.name);
-
-                res.render('job_form', {
-                    title: "Create Job for Organization'" + req.body.orgName + "'", 
-                    name:req.body.name.trim(), 
-                    description:req.body.description.trim(),
-                    errors: errors.array() });
-            } else {
+                // create an job object with escaped and trimmed data
+                var newJob = new Job (
+                    { name: req.body.name,
+                        description: req.body.description,
+                        organization: req.params.orgId
+                    });
                 
-                // data is valid and sanitized. save it
-                job.save(function (err) {
-                    if (err) { return next (err);}
-                    res.redirect('/jobs/'+req.body.orgId);
-                });
-            }
+                if (errors.length != 0) {
+                    res.render('job_form', {
+                        title: "Create Job for Organization'" + org.name + "'", 
+                        job: newJob,
+                        errors: errors });
+                } else {
+                    
+                    // data is valid and sanitized. save it
+                    newJob.save(function (err) {
+                        if (err) { return next (err);}
+                        res.redirect('/jobs/'+req.params.orgId);
+                    });
+                }
+            });
         }
      );
 }
@@ -94,21 +93,14 @@ exports.job_modify_get = function(req, res, next) {
     async.parallel(
         {
             job: function(callback) {
-                console.log('looking for job: ' + req.params.id);
-                Job.findById(req.params.id).exec(callback);
+                Job.findById(req.params.id).populate('organization').exec(callback);
             },
         }, 
         function(err, results) {
             if (err) { return next(err); }
-            if (results.job==null) {
-                var err = new Error('Job not found');
-                err.status = 404;
-                return next(err);
-            }
             res.render('job_form', { 
-                title: 'Modify Job', 
+                title: "Modify job '" + results.job.name + "' for organization '" + results.job.organization.name + "'", 
                 job: results.job});
-            req.session.errors = null;
         }
     );
 
@@ -122,44 +114,43 @@ exports.job_modify_post = [
     // process request after validation and sanittzation
     (req, res, next) => {
 
-        const errors = validationResult(req);
+        var errors = validationResult(req).array();
 
         // reload the job record to retrieve the organization
-        Job.findById(req.params.id).exec(function(err, job) {
+        Job.findById(req.params.id).populate('organization').exec(function(err, job) {
             if (err) { return next(err); }
-            if (job==null) {
-                var err = new Error('Job not found');
-                err.status = 404;
-                return next(err);
-            }
-            var org = job.organization;
-            var newJob = new Job (
-                { name: req.body.name.trim(),
-                    description: req.body.description.trim(),
-                    organization: org,
-                    _id:req.params.id
-                });
-        
-            if (!errors.isEmpty()) {
-                res.render('job_form', {
-                    title: 'Modify Job', 
-                    job:newJob,
-                    errors: errors.array() });
-            } else {
-                // data is valid. update the record
-                Job.findByIdAndUpdate(req.params.id, newJob, {}, function (err) {
-                    if (err) { return next(err); }
-                    res.redirect ('/jobs/'+newJob.organization);
+            // check if there is another job with this name is the organization
+            Job.findOne({'name': req.body.name, 'organization': job.organization})
+                .exec (function (err, anotherJob) {
+                if (err) {return next(err);}
+                if (anotherJob && anotherJob.id != job.id) {
+                    errors.push ({msg:'Another job with this name exists in the organization'});
+                }
 
-                });
-            }
+                // create a new job record
+                var newJob = new Job (
+                    { name: req.body.name,
+                        description: req.body.description,
+                        organization: job.organization.id,
+                        _id:req.params.id
+                    });
+        
+                if (errors.length != 0) {
+                    res.render('job_form', {
+                        title: "Modify job '" + job.name + "' for organization '" + job.organization.name + "'", 
+                        job:newJob,
+                        errors: errors });
+                } else {
+                    // data is valid. update the record
+                    Job.findByIdAndUpdate(req.params.id, newJob, {}, function (err) {
+                        if (err) { return next(err); }
+                        res.redirect ('/jobs/'+newJob.organization._id);
+
+                    });
+                }
+            });
         });
-        
- 
-
     }
-
-
 ]
 
 // Display job delete form on GET.

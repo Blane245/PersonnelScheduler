@@ -2,7 +2,7 @@ extends ../../views/layout
 
 block content
     h1= title
-    form(method='POST' action='')
+    form(method='POST' action='' novalidate)
         div.form-group 
             label(for='name') Name: 
             input#name.form-control(
@@ -12,7 +12,7 @@ block content
                 required='true' 
                 value=(undefined==role ? '' : role.name))        
         div.form-group 
-            label(for='description') Name: 
+            label(for='description') Description: 
             input#name.form-control(
                 name='description'
                 type='textarea' 

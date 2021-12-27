@@ -6,7 +6,7 @@ var job_role_controller = require('../controllers/jobroleController');
 var task_controller = require('../../task/controllers/taskController');
 
 /* GET request for list of jobs in an organization */
-router.get('/:orgid', job_controller.organization_job_list);
+router.get('/:orgId', job_controller.organization_job_list);
 
 /* GET request for creating a job for an organization */
 router.get('/:orgId/create', job_controller.job_create_get);

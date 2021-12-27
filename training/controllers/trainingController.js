@@ -11,9 +11,6 @@ exports.training_list = function (req, res, next) {
             res.render(
                 '../views/training_list', 
                 { title: 'Training List', training_list: trainings });
-        } , function(err, results) {
-            res.render('../views/training_list', { title: 'Training List', error: err, data: results }
-            );
         });
 };
 
@@ -29,53 +26,53 @@ exports.training_create_post = [
     // validate and sanitize fields
     check('name', 'Name must not be empty.').trim().isLength({min: 1}).escape(),
     check('description', '').trim().escape(),
-    // TODO prevent a new training from having the same name as a current one
  
     // save the new training
     (req, res, next) => {
-        const errors = validationResult(req);
+        var errors = validationResult(req).array();
 
-        // creat an training object with escaped and trimmed data
-        var training = new Training (
-            { name: req.body.name.trim(),
-              description: req.body.description.trim()});
+        // check for an existing training record with this name
+        Training.findOne({'name': req.body.name}).exec (function (err, training) {
+            if (err) { return next(err)};
+            if (training) {
+                errors.push({msg: 'A training with this name already exists.'});
+            }
         
-        if (!errors.isEmpty()) {
-
-            res.render('training_form', {
-                title: 'Create Training', 
-                name:req.body.name.trim(), 
-                description:req.body.description.trim(),
-                errors: errors.array() });
-        } else {
+            // create an training object with escaped and trimmed data
+            var newTraining = new Training (
+                { name: req.body.name,
+                description: req.body.description});
             
-            // data is valid and sanitized. save it
-            training.save(function (err) {
-                if (err) { return next (err);}
-                res.redirect('/trainings');
-            });
-        }
+            if (errors.length !=0) {
+
+                res.render('training_form', {
+                    title: 'Create Training',
+                    training: newTraining,
+                    errors: errors }); 
+            } else {
+                
+                // data is valid and sanitized. save it
+                newTraining.save(function (err) {
+                    if (err) { return next (err);}
+                    res.redirect('/trainings');
+                });
+            }
+        });
     }
-];
+]
 
 // Display training modify form on GET.
 exports.training_modify_get = function(req, res, next) {
     async.parallel(
         {
             training: function(callback) {
-                console.log('looking for training: ' + req.params.id);
                 Training.findById(req.params.id).exec(callback);
             },
         }, 
         function(err, results) {
             if (err) { return next(err); }
-            if (results.training==null) {
-                var err = new Error('Training not found');
-                err.status = 404;
-                return next(err);
-            }
             res.render('training_form', { 
-                title: 'Modify Training', 
+                title: "Modify Training '" + results.training.name + "'", 
                 training: results.training});    
         }
     );
@@ -90,33 +87,40 @@ exports.training_modify_post = [
     // process request after validation and sanittzation
     (req, res, next) => {
 
-        const errors = validationResult(req);
-        var training = new Training (
-            { name: req.body.name.trim(),
-              description: req.body.description.trim(),
-              _id:req.params.id
-            });
-        
-        if (!errors.isEmpty()) {
-            res.render('training_form', {
-                title: 'Modify Training', 
-                name:req.body.name.trim(), 
-                description:req.body.description.trim(),
-                errors: errors.array() });
-        } else {
-            // data is valid. update the record
-            Training.findByIdAndUpdate(req.params.id, training, {}, function (err) {
-                if (err) { return next(err); }
-                res.redirect ('/trainings');
+        var errors = validationResult(req).array();
 
-            });
-        }
-        
- 
+        // reload the training record to get its name
+        Training.findById(req.params.id).exec (function(err, training) {
 
+            // check for an existing training record with this name
+            Training.findOne({'name': req.body.name}).exec (function (err, otherTraining) {
+                if (err) { return next(err)};
+                if (otherTraining && otherTraining.id != req.params.id) {
+                    errors.push({msg: 'A training with this name already exists.'});
+                }
+                var newTraining = new Training (
+                    { name: req.body.name,
+                    description: req.body.description,
+                    _id:req.params.id
+                    });
+                
+                if (errors.length !=0) {
+                    res.render('training_form', {
+                        title: "Modify Training '" + training.name + "'",
+                        training: newTraining, 
+                        errors: errors });
+                } else {
+                    // data is valid. update the record
+                    Training.findByIdAndUpdate(req.params.id, newTraining, {}, function (err) {
+                        if (err) { return next(err); }
+                        res.redirect ('/trainings');
+
+                    });
+                }
+
+           });
+        });
     }
-
-
 ]
 
 // Display training delete form on GET.

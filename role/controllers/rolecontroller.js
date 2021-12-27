@@ -7,7 +7,6 @@ const { training_list } = require('../../training/controllers/trainingController
 
 // the list of roles for an organization
 exports.organization_role_list = function (req, res, next) {
-    console.log('in Role_controller for organization '+req.params.orgid);
     async.parallel ({
         // get the organization object for this group of roles
         organization: function (callback) {
@@ -20,18 +19,9 @@ exports.organization_role_list = function (req, res, next) {
         },
     }, function (err, results) {
         if (err) { return next(err); }
-        orgName = results.organization.name;
-        var roles = results.roles;
-        var n;
-        if (roles == null)
-            n = 0;
-        else
-            n = roles.length;
-        
-        console.log('orgname =' + orgName + ", count of roles " + n);
         res.render(
             '../role/views/role_list', 
-            { title: "Role List for Organization '"+ orgName + "'",
+            { title: "Role List for Organization '"+ results.organization.name + "'",
              organization: results.organization, 
              role_list: results.roles });
 
@@ -41,7 +31,7 @@ exports.organization_role_list = function (req, res, next) {
 
 // Display role create form on GET.
 exports.role_create_get = function(req, res, next) {
-    var org = Organization.findById(req.params.orgId)
+    Organization.findById(req.params.orgId)
         .exec(function (err, org) {
         if (err) { return next(err);}
         res.render('role_form', { title: 'Create Role for Organzation "' + org.name + '"'});
@@ -54,52 +44,47 @@ exports.role_create_post = [
     // validate and sanitize fields
     check('name', 'Name must not be empty.').trim().isLength({min: 1}).escape(),
     check('description', '').trim().escape(),
-    // check('organization', '').escape(),
-    // prevent a new role from having the same name as a current one
 
-    // save the new role
+    // save the new role unless the name is not unique within the organization
     (req, res, next) => {
+        var errors = validationResult(req).array();
 
         // get the organization that this role is to belong to
         Organization.findById(req.params.orgId).exec(function(err, org) {
             if (err) { return next(err);}
-            console.log('organization found for roles ' + org.id);
-            req.body.orgId = org._id;
-            req.body.orgName = org.name;
-            req.body.org = org;
-            console.log('Org in the req.body ' + req.body.org);
 
-            // create an role object with escaped and trimmed data
-            console.log('ready to create a new role object');
-            var role = new Role (
-                { name: req.body.name.trim(),
-                    description: req.body.description.trim(),
-                    organization: req.body.org
+
+            // check for duplicate role in this organization
+            Role.findOne({'name': req.body.name, 'organization': req.params.orgId}).exec (function (err, role) {
+                if (err) { return next(err)};
+                if (role) {
+                    errors.push({msg: 'A role with this name already exist for this organization.'});
+                }
+
+                // create an role object with escaped and trimmed data
+                var newRole = new Role ({ 
+                    name: req.body.name,
+                    description: req.body.description,
+                    organization: req.params.orgId
                 });
 
-            // Extract the validation errors from a request.
-            const errors = validationResult(req);
-            
-            if (!errors.isEmpty()) {
-                console.log('Error while saving role: ' + req.body.name);
-
-                res.render('role_form', {
-                    title: "Create Role for Organization'" + req.body.orgName + "'", 
-                    name:req.body.name.trim(), 
-                    description:req.body.description.trim(),
-                    errors: errors.array() });
-            } else {
-                
-                // data is valid and sanitized. save it
-                console.log('saving role record');
-                role.save(function (err) {
-                    if (err) { return next (err);}
-                    res.redirect('/roles/'+req.body.orgId);
-                });
-            }
-        }
-     );
-}
+                // redisplay on errors
+                if (errors.length !=0) {
+                    res.render('role_form', {
+                        title: "Create Role for Organization'" + org.name + "'", 
+                        role: newRole, 
+                        errors: errors });
+                } else {
+                    
+                    // data is valid and sanitized. save it
+                    newRole.save(function (err) {
+                        if (err) { return next (err);}
+                        res.redirect('/roles/'+req.params.orgId);
+                    });
+                }
+            });
+        });
+    }
 ];
 
 // Display role modify form on GET.
@@ -107,19 +92,13 @@ exports.role_modify_get = function(req, res, next) {
     async.parallel(
         {
             role: function(callback) {
-                console.log('looking for role: ' + req.params.id);
-                Role.findById(req.params.id).exec(callback);
+                Role.findById(req.params.id).populate('organization').exec(callback);
             },
         }, 
         function(err, results) {
             if (err) { return next(err); }
-            if (results.role==null) {
-                var err = new Error('Role not found');
-                err.status = 404;
-                return next(err);
-            }
             res.render('role_form', { 
-                title: 'Modify Role', 
+                title: "Modify role '" + results.role.name + "' for organization '" + results.role.organization.name + "'", 
                 role: results.role
                 });    
         }
@@ -134,44 +113,44 @@ exports.role_modify_post = [
 
     // process request after validation and sanittzation
     (req, res, next) => {
+        var errors = validationResult(req).array();
 
         // reload the role record to retrieve the organization
-        Role.findById(req.params.id).exec(function(err, role) {
+        Role.findById(req.params.id).populate('organization').exec(function(err, role) {
             if (err) { return next(err); }
-            if (role==null) {
-                var err = new Error('Role not found');
-                err.status = 404;
-                return next(err);
-            }
-            var org = role.organization;
-            const errors = validationResult(req);
-            var newRole = new Role (
-                { name: req.body.name.trim(),
-                description: req.body.description.trim(),
-                organization: org,
-                _id:req.params.id
-                });
+            // check if there is another role with this name is the organization
+            Role.findOne({'name': req.body.name, 'organization': role.organization})
+                .exec (function (err, anotherRole){
+                if (err) {return next(err);}
+                if (anotherRole && anotherRole.id != role.id) {
+                    errors.push ({msg:'Another role with this name exists in the organization'});
+                }
+
+                // create a new role record
+                var newRole = new Role (
+                    { name: req.body.name,
+                    description: req.body.description,
+                    organization: role.organization.id,
+                    _id:req.params.id
+                    });
             
-            if (!errors.isEmpty()) {
-                res.render('role_form', {
-                    title: 'Modify Role', 
-                    role: newRole,
-                    errors: errors.array() });
-            } else {
-                // data is valid. update the record
-                Role.findByIdAndUpdate(req.params.id, newRole, {}, function (err) {
-                    if (err) { return next(err); }
-                    res.redirect ('/roles/'+newRole.organization);
+                if (errors.length != 0) {
+                    res.render('role_form', {
+                        title: "Modify role '" + role.name + "' for organization '" + role.organization.name + "'", 
+                        role: newRole,
+                        errors: errors });
+                } else {
 
-                });
-            }
+                    // data is valid. update the record
+                    Role.findByIdAndUpdate(req.params.id, newRole, {}, function (err) {
+                        if (err) { return next(err); }
+                        res.redirect ('/roles/'+newRole.organization._id);
+
+                    });
+                }
+            });
         });
-        
- 
-
     }
-
-
 ]
 
 // Display role delete form on GET.

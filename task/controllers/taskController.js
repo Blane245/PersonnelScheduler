@@ -25,7 +25,6 @@ const Training = require('../../models/training');
 
 // I'm sure lots of others things will come up
 // The entries of roles and people in the record has a correspondance.
-// TODO prevent changes to a role list for a job if there are already tasks for the job
 
 exports.task_list_get = function (req, res, next) {
     async.parallel ({
@@ -75,51 +74,59 @@ exports.task_create_post = [
     }),
     // prevent a new job from having the same name as a current one
 
-    // save the new task
+    // save the new task unless it has the same name as another task for this job
     (req, res, next) => {
+
+        // Extract the validation errors from a request.
+        var errors = validationResult(req).array();
 
         // get the job that this tasks belongs to
         Job.findById(req.params.id).exec(function(err, job) {
             if (err) { return next(err);}
 
-            // create an task object with escaped and trimmed data
-            var task = new Task ( 
-                { name: req.body.name,
-                    description: req.body.description,
-                    startDate: req.body.startDate,
-                    endDate: req.body.endDate,
-                    job: job
-                });
-
-            // Extract the validation errors from a request.
-            const errors = validationResult(req);
-            
-            if (!errors.isEmpty()) {
-                res.render('task_form', {
-                    title: "Create Task for Job '" + job.name + "'", 
-                    task: task,
-                    errors: errors.array() });
-            } else {
-                
-                // data is valid and sanitized. save it
-                task.save(function (err) {
-                    if (err) { return next (err);}
-                    req.params.taskid = task.id;
-                });
-                // if the assign button was pressed, then do the role assignment activity
-                // otherwise go back to the task list
-                if (req.params.assign == null)
-                    res.redirect('/jobs/job/'+req.params.id+'/tasks/');
-                else {
-
-                    // pick up the task record's key and editting the assignment list
-                    task_assign_get (req, res, next);
-                    // this will never return
+            // check for duplicate task in this job
+            Task.findOne({'name': req.body.name, 'job': req.params.id}).exec (function (err, task) {
+                if (err) { return next(err)};
+                if (task) {
+                    errors.push({msg: 'A task with this name already exist for this job.'});
                 }
-            }
-        }
-    );}
 
+                // create an task object with escaped and trimmed data
+                var task = new Task ( 
+                    { name: req.body.name,
+                        description: req.body.description,
+                        startDate: req.body.startDate,
+                        endDate: req.body.endDate,
+                        job: req.params.id
+                    });
+            
+                if (errors.length !=0) {
+                    res.render('task_form', {
+                        title: "Create Task for Job '" + job.name + "'", 
+                        task: task,
+                        errors: errors });
+                } else {
+                    
+                    // data is valid and sanitized. save it
+                    task.save(function (err) {
+                        if (err) { return next (err);}
+                        req.params.taskid = task.id;
+                    });
+
+                    // if the assign button was pressed, then do the role assignment activity
+                    // otherwise go back to the task list
+                    if (req.params.assign == null)
+                        res.redirect('/jobs/job/'+req.params.id+'/tasks/');
+                    else {
+
+                        // pick up the task record's key and editting the assignment list
+                        task_assign_get (req, res, next);
+                        // this will never return
+                    }
+                }
+            });
+        });
+    }
 ]
 
 // Display training modify form on GET.
@@ -127,16 +134,13 @@ exports.task_modify_get = function(req, res, next) {
     async.parallel(
         {
             task: function(callback) {
-                Task.findById(req.params.taskid).exec(callback);
-            },
-            job: function(callback) {
-                Job.findById(req.params.id).exec(callback);
+                Task.findById(req.params.taskid).populate('job').exec(callback);
             },
         }, 
         function(err, results) {
             if (err) { return next(err); }
             res.render('task_form', { 
-                title: "Modify Task '" + results.task.name + "' for Job '"+results.job.name+"'", 
+                title: "Modify task '" + results.task.name + "' for job '"+results.task.job.name+"'", 
                 task: results.task});    
         }
     );
@@ -158,42 +162,52 @@ exports.task_modify_post = [
 
     // process request after validation and sanittzation
     (req, res, next) => {
+        var errors = validationResult(req).array();
 
         // get the existing task record for modification
-        Task.findById(req.params.taskid).exec(function (err, task) {
+        Task.findById(req.params.taskid).populate('job').exec(function (err, task) {
             if (err) { next(err); console.log(err);}
-            const errors = validationResult(req);
-            var newTask = new Task (
-                { name: req.body.name,
-                description: req.body.description,
-                startDate: req.body.startDate,
-                endDate: req.body.endDate,
-                job: task.job,
-                persons: task.persons,
-                _id: task.id
-                });
-            
-            if (!errors.isEmpty()) {
-                res.render('task_form', { 
-                    title: "Modify Task '" + newTask.name + "'", 
-                    task: newTask,    
-                    errors: errors.array() });
-            } else {
-                // data is valid. update the record
-                Task.findByIdAndUpdate(req.params.taskid, newTask, {}, function (err) {
-                    if (err) { return next(err); }});
-                if (req.params.assign == null)
-                    res.redirect('/jobs/job/'+req.params.id+'/tasks/');
-                else {
-
-                    // pick up the task record's key and editting the assignment list
-                    task_assign_get (req, res, next);
-                    // this will never return
+            // check if there is another task with this name in the job
+            Task.findOne({'name': req.body.name, 'job': task.job})
+                .exec (function (err, anotherTask) {
+                if (err) {return next(err);}
+                if (anotherTask && anotherTask.id != task.id) {
+                    errors.push ({msg:'Another task with this name exists in the job'});
                 }
 
-            }
+
+                var newTask = new Task (
+                    { name: req.body.name,
+                    description: req.body.description,
+                    startDate: req.body.startDate,
+                    endDate: req.body.endDate,
+                    job: task.job.id,
+                    persons: task.persons,
+                    _id: req.params.taskid
+                    });
+            
+                if (errors.length != 0) {
+                    res.render('task_form', { 
+                        title: "Modify task '" + task.name + "' for job '" + task.job.name + "'", 
+                        task: newTask,    
+                        errors: errors });
+                } else {
+
+                    // data is valid. update the record
+                    Task.findByIdAndUpdate(req.params.taskid, newTask, {}, function (err) {
+                        if (err) { return next(err); };
+                        if (req.params.assign == null)
+                            res.redirect('/jobs/job/'+req.params.id+'/tasks/');
+                        else {
+
+                            // pick up the task record's key and editting the assignment list
+                            task_assign_get (req, res, next);
+                        }
+                    });
+                }
+            });
         });
-}
+    }
 ]
 
 // modify the role/person list for a task

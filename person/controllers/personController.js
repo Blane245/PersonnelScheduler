@@ -14,17 +14,17 @@ exports.organization_person_list = function (req, res, next) {
         // get the persons for this organization
         persons: function (callback) {
             Person.find({ 'organization': req.params.orgid })
-            .populate('organization')
             .exec(callback);
         },
     }, function (err, results) {
         if (err) { return next(err); }
         orgName = results.organization.name;
         res.render(
-            '../person/views/person_list', 
-            { title: "Person List for Organization '"+ orgName + "'",
-             organization: results.organization, 
-             persons: results.persons });
+            '../person/views/person_list',{ 
+                title: "Person List for Organization '"+ orgName + "'",
+                organization: results.organization,
+                persons: results.persons 
+            });
 
     });
 
@@ -35,62 +35,59 @@ exports.person_create_get = function(req, res, next) {
     Organization.findById(req.params.orgId)
         .exec(function (err, org) {
         if (err) { return next(err);}
-        res.render('person_form', { title: 'Create Person for Organzation "' + org.name + '"'});
+        res.render('person_form', { 
+            title: 'Create Person for Organization "' + org.name + '"'
+            });
 
     });
 };
 
-// Handle person create form on POST
+// Handle person create form on POST    
 exports.person_create_post = [
 
     // validate and sanitize fields
     body('lastName', 'Last Name must not be empty.').trim().isLength({min: 1}).escape(),
     body('firstName', 'First Name must not be empty.').trim().isLength({min: 1}).escape(),
     body('email', 'Email is not valid.').trim().isEmail().escape(),
-    // prevent a new person from having the same name as a current one
 
-    // save the new person
+    // save the new person unless the email is not unique
     (req, res, next) => {
+        var errors = validationResult(req).array();
 
-        // get the organization that this person is to belong to
-        Organization.findById(req.params.orgId).exec(function(err, org) {
-            if (err) { return next(err);}
-            req.body.orgId = org._id;
-            req.body.orgName = org.name;
-            req.body.org = org;
+        Person.findOne({'email': req.body.email}).populate('organization').exec (function (err, person){
+            if(person) {
+                errors.push({msg: 'Person with that email already exists.'});
+            }
 
-            // create an person object with escaped and trimmed data
-            var person = new Person (
-                { lastName: req.body.lastName.trim(),
-                    firstName: req.body.firstName.trim(),
-                    email: req.body.email.trim(),
-                    organization: req.body.org
+            // create a new Person object
+            var newPerson = new Person (
+                { lastName: req.body.lastName,
+                    firstName: req.body.firstName,
+                    email: req.body.email,
+                    organization: req.params.orgId
+            });
+
+            // repost if any errors
+            if (errors.length != 0) {
+                Organization.findById(req.params.orgId).exec(function (err, org) {
+                    if (err) {return next(err);}
+                    res.render('person_form', {
+                        title: "Create Person for Organization'" + org.name + "'", 
+                        person: newPerson,
+                        modify: false,
+                        errors: errors });
+    
                 });
-
-            // Extract the validation errors from a request.
-            const errors = validationResult(req);
-            
-            if (!errors.isEmpty()) {
-
-                res.render('person_form', {
-                    title: "Create Person for Organization'" + req.body.orgName + "'", 
-                    lastName:req.body.lastName,
-                    firstName:req.body.firstName,
-                    email:req.body.email,
-                    organization:req.body.org,
-                    modify: false,
-                    errors: errors.array() });
             } else {
-                
-                // data is valid and sanitized. save it
-                person.save(function (err) {
+
+                // a person with a new email address is saved
+                newPerson.save(function (err) {
                     if (err) { return next (err);}
-                    res.redirect('/persons/'+req.body.orgId);
+                    res.redirect('/persons/'+req.params.orgId);
                 });
             }
-        }
-     );
-}
+        });
+    }
 ];
 
 // Display person modify form on GET.
@@ -104,13 +101,8 @@ exports.person_modify_get = function(req, res, next) {
         },
         } ,function(err, results) {
             if (err) { return next(err); }
-            if (results.person==null) {
-                var err = new Error('Person not found');
-                err.status = 404;
-                return next(err);
-            }
             res.render('person_form', { 
-                title: 'Modify Person', 
+                title: "Modify person '"+results.person.fullName+"' for organization '"+results.person.organization.name+"'",
                 person: results.person,
                 organizations: results.organizations,
                 modify:true});    
@@ -123,59 +115,53 @@ exports.person_modify_post = [
     // validate and sanitize fields.
     body('firstName', 'First name must not be empty.').trim().isLength({min: 1}).escape(),
     body('lastName', 'Last name must not be empty.').trim().isLength({min: 1}).escape(),
-    body('email', 'Invalid Email adress').trim().isEmail().escape(),
-    body('org', '').escape(),
-    body('organizations', '').escape(),
-    // TODO prevent a new person from having the same name as a current one
+    body('email', 'Email address is not valid').trim().isEmail().escape(),
 
-    // process request after validation and sanittzation
+    // process request after validation and sanitization
     (req, res, next) => {
 
-        const errors = validationResult(req);
+        const errors = validationResult(req).array();
 
-        // reload the person record to retrieve the organization
-        Person.findById(req.params.id).exec(function(err, person) {
-            if (err) { return next(err); }
-            if (person==null) {
-                var err = new Error('Person not found');
-                err.status = 404;
-                return next(err);
+        // check for another person with the same amail address
+        Person.find({'email': req.body.email}).exec (function (err, persons) {
+            if (persons.length == 1 && persons[0].id != req.params.id) {
+                errors.push({msg: 'Person with that same email address already exists.'});
             }
-            var personOrg = person.organization;
-            console.log('selected organization: ' + req.body.org);
-            var newPerson = new Person (
-                { lastName: req.body.lastName.trim(),
-                    firstName: req.body.firstName.trim(),
-                    email: req.body.email.trim(),
-                    organization: req.body.org,
-                    _id: req.params.id
+
+            // create a new person record from the request body
+            var newPerson = new Person ({ 
+                lastName: req.body.lastName,
+                firstName: req.body.firstName,
+                email: req.body.email,
+                organization: req.body.org,
+                _id: req.params.id
+            });
+
+            // display errors, if any, after reloading the organizations array
+            if (errors.length != 0) {
+                Organization.find().exec(function(err,orgs) {
+                    res.render('person_form', {
+                        title: 'Modify Person', 
+                        person: newPerson,
+                        organizations: orgs,
+                        modify: true,
+                        errors: errors});
                 });
-        
-            if (!errors.isEmpty()) {
-                res.render('person_form', {
-                    title: 'Modify Person', 
-                    person: newPerson,
-                    organizations: req.body.org,
-                    modify: true,
-                    errors: errors.array() });
             } else {
-                // data is valid. update the record
-                console.log('new Person\n');
-                console.log(newPerson.lastName);
-                console.log(newPerson.firstName);
-                console.log(newPerson.email);
-                console.log(newPerson.organization.toString());
-                console.log(newPerson._id.toString());
-                Person.findByIdAndUpdate(req.params.id, newPerson, {}, function (err) {
+                // data is valid. update the record after getting the orginal organization
+                Person.findById(req.params.id).exec(function(err, person) {
                     if (err) { return next(err); }
+                    Person.findByIdAndUpdate(req.params.id, newPerson, {}, function (err) {
+                        if (err) { return next(err); }
+                        // redirect to the person's orignal organization
+                        res.redirect ('/persons/'+person.organization);
 
-                    // redirect to the person's orignal organization
-                    res.redirect ('/persons/'+personOrg);
-
+                    });
                 });
             }
         });
     }
+
 ];
 
 // Display person delete form on GET.
@@ -585,33 +571,29 @@ exports.person_training_modify_post = [
 
 ]
 
-// // Display person's leave delete form on GET.
-// exports.person_leave_delete_get = function(req, res, next) {
-//     Leave.findById(req.params.id).populate('person')
-//     .exec(function(err, leave) {
-//         if (err) { return next(err); }
-//         if (leave==null) { // No results.
-//             res.redirect('/index/');
-//         }
-//         // Successful, so render.
-//         res.render('leave_delete', 
-//             { title: "Delete leave for Person '" + leave.person.fullName + "'", 
-//             leave: leave } );
-//     });
+// Display person's leave delete form on GET.
+exports.person_leave_delete_get = function(req, res, next) {
+    Leave.findById(req.params.id).populate('person')
+    .exec(function(err, leave) {
+        if (err) { return next(err); }
+        // Successful, so render.
+        res.render('leave_delete', 
+            { title: "Delete leave for Person '" + leave.person.fullName + "'", 
+            leave: leave } );
+    });
 
-// }
+}
 
-// // Display person's leave delete form on POST.
-// exports.person_leave_delete_post = function(req, res, next) {
-//     Leave.findById(req.params.id).populate('person')
-//     .exec(function(err, leave) {
-//         if (err) { return next(err); }
-//             Leave.findByIdAndRemove(leave.id, function (err) {
-//                 if (err) { return next(err); }
-//                 // Success - go to organization list
-//                 res.redirect ('/persons/person/'+leave.person.id+'/leave');
-//             })
-//         // }
-//     });
+// Display person's leave delete form on POST.
+exports.person_leave_delete_post = function(req, res, next) {
+    Leave.findById(req.params.id).populate('person')
+    .exec(function(err, leave) {
+        if (err) { return next(err); }
+        Leave.findByIdAndRemove(leave.id, function (err) {
+            if (err) { return next(err); }
+            // Success - go to organization list
+            res.redirect ('/persons/person/'+leave.person.id+'/leave');
+        })
+    });
 
-// }
+}
