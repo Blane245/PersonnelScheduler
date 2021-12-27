@@ -36,7 +36,7 @@ exports.person_create_get = function(req, res, next) {
         .exec(function (err, org) {
         if (err) { return next(err);}
         res.render('person_form', { 
-            title: 'Create Person for Organization "' + org.name + '"'
+            title: 'Create Person for Organization "' + org.name + '"', org: org.id
             });
 
     });
@@ -75,6 +75,7 @@ exports.person_create_post = [
                         title: "Create Person for Organization'" + org.name + "'", 
                         person: newPerson,
                         modify: false,
+                        org: req.params.orgId,
                         errors: errors });
     
                 });
@@ -105,6 +106,7 @@ exports.person_modify_get = function(req, res, next) {
                 title: "Modify person '"+results.person.fullName+"' for organization '"+results.person.organization.name+"'",
                 person: results.person,
                 organizations: results.organizations,
+                org: results.person.organization.id,
                 modify:true});    
         }
     );
@@ -145,6 +147,7 @@ exports.person_modify_post = [
                         person: newPerson,
                         organizations: orgs,
                         modify: true,
+                        org: req.body.org,
                         errors: errors});
                 });
             } else {
@@ -161,7 +164,7 @@ exports.person_modify_post = [
             }
         });
     }
-
+ 
 ];
 
 // Display person delete form on GET.
@@ -231,7 +234,8 @@ exports.person_leave_create_get = function(req, res, next) {
     Person.findById(req.params.id)
     .exec(function (err, person) {
         if (err) { return next(err);}
-        res.render('leave_form', { title: 'Create Leave for Person "' + person.fullName + '"'});
+        res.render('leave_form', { title: 'Create Leave for Person "' + person.fullName + '"',
+            person: person});
 
     });
 };
@@ -241,7 +245,7 @@ exports.person_leave_create_post = [
     
     // validate and sanitize fields
     body('name', 'Leave name must be given.').trim().isLength({min: 1}).escape(),
-    body('startDate', 'Start Date must be a valid.').toDate(),
+    body('startDate', 'Start Date must be a valid.').isDate(),
     body('endDate', 'End Date must be a valid date.').isDate()
     .custom((value, { req }) => {
         if (value < req.body.startDate) {
@@ -255,10 +259,10 @@ exports.person_leave_create_post = [
     (req, res, next) => {
 
         // Extract the validation errors from the request
-        const errors = validationResult (req);
+        var errors = validationResult (req).array();
 
         // create a new leave record from the vlaidiated and sanitixed data.
-        var leave = new Leave ( {
+        var newLeave = new Leave ( {
             name: req.body.name,
             startDate : req.body.startDate,
             endDate: req.body.endDate,
@@ -267,47 +271,41 @@ exports.person_leave_create_post = [
         });
 
         // redisplay the form is there are errors
-        if (!errors.isEmpty()) {
-            Person.findById(req.param.id)
-            .exec (function (err, person) {
+        if (errors.length != 0) {
+            Person.findById(req.params.id).exec(function (err, person) {
                 if (err) { return next (err); }
-                res.render('leave_form'), { 
-                    title: 'Create Leave for Person "' + person.name + '"',
+                res.render('leave_form', { 
+                    title: "Create Leave for Person '" + person.fullName + "'",
                     leave: newLeave,
-                    errors: errors.array()}
+                    person: person,
+                    errors: errors
                 });
+            });
         } else {
             
             // data is valid and sanitized. save it and return to leave list
-            leave.save(function (err) {
+            newLeave.save(function (err) {
                 if (err) { 
                     console.log('save error: \n'+err);
                     return next (err);}
                 res.redirect('/persons/person/'+req.params.id+'/leave');
             });
         }
-                    
     }
-
-
 ];
 
 // Display person's leave modify form on GET.
 exports.person_leave_modify_get = function(req, res, next) {
     async.parallel({
         leave: function(callback) {
-            Leave.findById(req.params.id).populate('person').exec(callback);
+            Leave.findById(req.params.leaveid).populate('person').exec(callback);
         },
         } ,function(err, results) {
             if (err) { return next(err); }
-            if (results.leave==null) {
-                var err = new Error('Leave not found');
-                err.status = 404;
-                return next(err);
-            }
             res.render('leave_form', { 
                 title: "Modify Leave for '" + results.leave.person.fullName + "'", 
                 leave: results.leave,
+                person: results.leave.person
             });    
         }
     );
@@ -334,7 +332,7 @@ exports.person_leave_modify_post = [
         const errors = validationResult(req);
 
         // reload the person record to retrieve the organization
-        Leave.findById(req.params.id).populate('person').exec(function(err, leave) {
+        Leave.findById(req.params.leaveid).populate('person').exec(function(err, leave) {
             if (err) { return next(err); }
             if (leave==null) {
                 var err = new Error('Leave not found');
@@ -354,6 +352,7 @@ exports.person_leave_modify_post = [
                 res.render('leave_form', {
                     title: "Modify leave for Person '" + leave.person.fullName ,
                     leave: newLeave,
+                    person: newLeave.person,
                     errors: errors.array() });
             } else {
                 // data is valid. update the record
@@ -372,23 +371,20 @@ exports.person_leave_modify_post = [
 
 // Display person's leave delete form on GET.
 exports.person_leave_delete_get = function(req, res, next) {
-    Leave.findById(req.params.id).populate('person')
+    Leave.findById(req.params.leaveid).populate('person')
     .exec(function(err, leave) {
         if (err) { return next(err); }
-        if (leave==null) { // No results.
-            res.redirect('/index/');
-        }
         // Successful, so render.
         res.render('leave_delete', 
             { title: "Delete leave for Person '" + leave.person.fullName + "'", 
-            leave: leave } );
+            leave: leave, person: leave.person } );
     });
 
 }
 
 // Display person's leave delete form on POST.
 exports.person_leave_delete_post = function(req, res, next) {
-    Leave.findById(req.params.id).populate('person')
+    Leave.findById(req.params.leaveid).populate('person')
     .exec(function(err, leave) {
         if (err) { return next(err); }
             Leave.findByIdAndRemove(leave.id, function (err) {
@@ -403,11 +399,6 @@ exports.person_leave_delete_post = function(req, res, next) {
 
 // display a person's training records
 exports.person_training_list = function(req, res, next) {
-
-    // get the person and all of the person's person_training
-
-
-    // render the person_training list for a person
     async.parallel ({
         // get the person object for this group of person_trainings
         person: function (callback) {
@@ -497,23 +488,17 @@ exports.person_training_create_post = [
 
 ];
 
-//TODO test person/training modify and delete
 // Display person's training modify form on GET.
 exports.person_training_modify_get = function(req, res, next) {
     async.parallel({
         person_training: function(callback) {
-            Person_Training.findById(req.params.id).populate('training').populate('person').exec(callback);
+            Person_Training.findById(req.params.trainingid).populate('training').populate('person').exec(callback);
         },
         trainings: function (callback) {
             Training.find({}).exec(callback);
         },
         } ,function(err, results) {
             if (err) { return next(err); }
-            if (results.person_training==null) {
-                var err = new Error('Training record not found');
-                err.status = 404;
-                return next(err);
-            }
             res.render('person_training_form', { 
                 title: "Modify training record for '" + results.person_training.person.fullName + "'", 
                 person: results.person_training.person,
@@ -537,28 +522,24 @@ exports.person_training_modify_post = [
         const errors = validationResult(req);
 
         // reload the person training record
-        Person_Training.findById(req.params.id).populate('person').exec(function(err, person_training) {
+        Person_Training.findById(req.params.trainingid).populate('person').exec(function(err, person_training) {
             if (err) { return next(err); }
-            if (person_training==null) {
-                var err = new Error('Person-Training not found');
-                err.status = 404;
-                return next(err);
-            }
             var newPersonTraining = new Person_Training (
                 { person: person_training.person,
                   expirationDate: req.body.expirationDate,
                   training: req.body.training,
-                  _id: req.params.id
+                  _id: req.params.trainingid
                 });
         
             if (!errors.isEmpty()) {
                 res.render('person_training_form', {
                     title: "Modify training record for '" + person_training.person.fullName ,
                     person_training: newPersonTraining,
+                    person: person_training.person,
                     errors: errors.array() });
             } else {
                 // data is valid. update the record
-                Person_Training.findByIdAndUpdate(req.params.id, newPersonTraining, {}, function (err) {
+                Person_Training.findByIdAndUpdate(req.params.trainingid, newPersonTraining, {}, function (err) {
                     if (err) { return next(err); }
 
                     // redirect to the person's training list
@@ -572,27 +553,28 @@ exports.person_training_modify_post = [
 ]
 
 // Display person's leave delete form on GET.
-exports.person_leave_delete_get = function(req, res, next) {
-    Leave.findById(req.params.id).populate('person')
-    .exec(function(err, leave) {
+exports.person_training_delete_get = function(req, res, next) {
+    Person_Training.findById(req.params.trainingid).populate('person')
+    .exec(function(err, person_training) {
         if (err) { return next(err); }
         // Successful, so render.
-        res.render('leave_delete', 
-            { title: "Delete leave for Person '" + leave.person.fullName + "'", 
-            leave: leave } );
+        res.render('person_training_delete', 
+            { title: "Delete training for Person '" + person_training.person.fullName + "'", 
+            person: person_training.person,
+            person_training: person_training } );
     });
 
 }
 
 // Display person's leave delete form on POST.
-exports.person_leave_delete_post = function(req, res, next) {
-    Leave.findById(req.params.id).populate('person')
-    .exec(function(err, leave) {
+exports.person_training_delete_post = function(req, res, next) {
+    Person_Training.findById(req.params.trainingid).populate('person')
+    .exec(function(err, person_training) {
         if (err) { return next(err); }
-        Leave.findByIdAndRemove(leave.id, function (err) {
+        Person_Training.findByIdAndRemove(req.params.trainingid, function (err) {
             if (err) { return next(err); }
             // Success - go to organization list
-            res.redirect ('/persons/person/'+leave.person.id+'/leave');
+            res.redirect ('/persons/person/'+person_training.person+'/training');
         })
     });
 

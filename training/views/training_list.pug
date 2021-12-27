@@ -5,6 +5,10 @@ block content
 
   a(href='trainings/create')
     button.btn.btn-large.btn-primary(type='button') Add Training Program 
+  p
+  a(href='index') 
+    button.btn.btn-large.btn-primary(type='button') Return to menu 
+  p
   if training_list
     table(class='table' id='training-table')
       thread 
@@ -24,7 +28,7 @@ block content
                 button(type='button' class='btn btn-small btn-primary') 
             td(class='text-center')
               a(href='trainings/training/'+training.id+'/delete' style="color:red")
-                button(type='button' class='btn btn-small btn-danger') 
+                button(type='button' class='btn btn-small btn-danger')
   else
     ul
       li There are no trainings

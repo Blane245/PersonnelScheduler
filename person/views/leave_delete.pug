@@ -12,3 +12,6 @@ block content
       input#leaveid.form-control(type='hidden',name='leaveid', required='true', value=leave._id )
 
     button.btn.btn-primary(type='submit') Delete
+    p
+    a(href='/persons/person/'+person.id+'/leave')
+        button.btn.btn-danger(type='button') Cancel

@@ -1,11 +1,11 @@
-// TODO prevent addition of duplicates - organization, job, role, person (in organization), training, task (in job)
+// TODO add role array to task record so new tasks can inherit changes in job/role list
+// do not allow changes to task role list 
 // TODO implement checks for children before allowing delete (organization, person, role, job)
 // TODO check for relationships before allowing modify and delete (job/role, person/task)
 // TODO dates 'walking'
 // TODO normalize list pages - table format
-// TODO - implement copy function for job to replicate another one with roles
+// TODO - implement copy function for job to replicate another one with same roles
 // TODO - implement move role up and down job list
-// TODO add cancel buttons to modify and delete
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');

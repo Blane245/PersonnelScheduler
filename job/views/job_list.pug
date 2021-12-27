@@ -2,9 +2,12 @@ extends ../../views/layout
 
 block content
     h1= title
-    - var addurl = '/jobs/' +organization.id+ '/create/'
-    button(type='button' class='btn btn-large btn-primary') 
-        a(href=addurl style="color:white") Add Job
+    a(href='/jobs/' +organization.id+ '/create/')
+        button(type='button' class='btn btn-large btn-primary') Add Job
+    p
+    a(href='/organizations')
+        button(type='button' class='btn btn-large btn-primary') Return to Organization List
+    p
     if job_list.length != 0
         table(class='table' id='job-table')
             thread 

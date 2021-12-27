@@ -5,7 +5,11 @@ block content
     - var addurl = '/jobs/job/'+job.id+'/role/add'
     a(href=addurl)
         button.btn.btn-large.btn-primary Add Role to Job
-    if rolelist
+    p
+    a(href='/jobs/'+job.organization)
+        button.btn.btn-large.btn-primary Return to Job List
+    p
+    if rolelist.length != 0
         table(class='table' id='job-table')
             thread 
                 tr 

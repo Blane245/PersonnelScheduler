@@ -12,3 +12,6 @@ block content
       input#roleid.form-control(type='hidden',name='roleid', required='true', value=role._id )
 
     button.btn.btn-primary(type='submit') Delete
+    p
+    a(href='/jobs/job/'+job.id+'/roles')
+      button.btn.btn-danger(type='button') Cancel

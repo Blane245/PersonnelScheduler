@@ -4,10 +4,13 @@ block content
   h1= title
   h2= 'Description: ' + training.description
 
-  p Do you really want to remove this training requirement for the job?
+  p Do you really want to remove this training requirement for the role?
 
   form(method='POST' action='')
     div.form-group
       input#trainingid.form-control(type='hidden',name='trainingid', required='true', value=training._id )
 
     button.btn.btn-primary(type='submit') Delete
+    p
+    a(href='/roles/role/'+role.id+'/training')
+        button.btn.btn-danger(type='button') Cancel

@@ -19,6 +19,9 @@ block content
                 placeholder='Description of Job'
                 required='false' value=(undefined==job ? '' : job.description))
         button.btn.btn-primary(type='submit') Submit
+        p
+        a(href='/jobs/'+org)
+            button.btn.btn-danger(type='button') Cancel
     if errors 
         ul  
             for error in errors 

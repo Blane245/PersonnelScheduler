@@ -5,6 +5,10 @@ block content
     - var addurl = '/persons/' +organization.id+ '/create/'
     a(href=addurl)
         button.btn.btn-large.btn-primary(type='button') Add New Person
+    p
+    a(href='/organizations')
+        button.btn.btn-primary(type='button') Return to Organization List
+    p
     if persons.length != 0
         table(class='table' id='person-table')
             thread 

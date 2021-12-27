@@ -34,7 +34,8 @@ exports.job_create_get = function(req, res, next) {
     Organization.findById(req.params.orgId)
         .exec(function (err, org) {
         if (err) { return next(err);}
-        res.render('job_form', { title: 'Create Job for Organzation "' + org.name + '"'});
+        res.render('job_form', { title: 'Create Job for Organzation "' + org.name + '"',
+        org: org.id});
 
     });
 };
@@ -100,7 +101,7 @@ exports.job_modify_get = function(req, res, next) {
             if (err) { return next(err); }
             res.render('job_form', { 
                 title: "Modify job '" + results.job.name + "' for organization '" + results.job.organization.name + "'", 
-                job: results.job});
+                job: results.job, org: results.job.organization});
         }
     );
 

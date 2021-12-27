@@ -25,6 +25,9 @@ block content
                         required='true' 
                         value=(undefined===person_training ? '' : person_training.expirationDate_formatted))        
         button.btn.btn-primary(type='submit') Submit
+        p
+        a(href='/persons/person/'+person.id+'/person_training')
+            button.btn.btn-danger(type='button') Cancel
     if errors 
         ul  
             for error in errors 

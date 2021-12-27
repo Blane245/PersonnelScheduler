@@ -11,3 +11,6 @@ block content
       input#personid.form-control(type='hidden',name='personid', required='true', value=person._id )
 
     button.btn.btn-primary(type='submit') Delete
+    p
+    a(href='/persons/'+person.organization.id)
+      button.btn.btn-danger(type='submit') Cancel

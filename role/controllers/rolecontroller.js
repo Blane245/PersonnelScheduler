@@ -10,10 +10,10 @@ exports.organization_role_list = function (req, res, next) {
     async.parallel ({
         // get the organization object for this group of roles
         organization: function (callback) {
-            Organization.findById(req.params.orgid).exec(callback);},
+            Organization.findById(req.params.orgId).exec(callback);},
         // get the roles for this organization
         roles: function (callback) {
-            Role.find({ 'organization': req.params.orgid })
+            Role.find({ 'organization': req.params.orgId })
             .populate('organization')
             .exec(callback);
         },
@@ -22,7 +22,7 @@ exports.organization_role_list = function (req, res, next) {
         res.render(
             '../role/views/role_list', 
             { title: "Role List for Organization '"+ results.organization.name + "'",
-             organization: results.organization, 
+             organization: results.organization,
              role_list: results.roles });
 
     });
@@ -34,7 +34,9 @@ exports.role_create_get = function(req, res, next) {
     Organization.findById(req.params.orgId)
         .exec(function (err, org) {
         if (err) { return next(err);}
-        res.render('role_form', { title: 'Create Role for Organzation "' + org.name + '"'});
+        res.render('role_form', { 
+            title: 'Create Role for Organzation "' + org.name + '"',
+            org: org});
 
     });
 };
@@ -73,6 +75,7 @@ exports.role_create_post = [
                     res.render('role_form', {
                         title: "Create Role for Organization'" + org.name + "'", 
                         role: newRole, 
+                        org: org,
                         errors: errors });
                 } else {
                     
@@ -99,7 +102,8 @@ exports.role_modify_get = function(req, res, next) {
             if (err) { return next(err); }
             res.render('role_form', { 
                 title: "Modify role '" + results.role.name + "' for organization '" + results.role.organization.name + "'", 
-                role: results.role
+                role: results.role,
+                org: results.role.organization
                 });    
         }
     );
@@ -138,6 +142,7 @@ exports.role_modify_post = [
                     res.render('role_form', {
                         title: "Modify role '" + role.name + "' for organization '" + role.organization.name + "'", 
                         role: newRole,
+                        org: role.organization,
                         errors: errors });
                 } else {
 
@@ -163,14 +168,11 @@ exports.role_delete_get = function(req, res, next) {
         },
     }, function(err, results) {
         if (err) { return next(err); }
-        if (results.role==null) { // No results.
-            res.redirect('/organizations');
-        }
-        req.body.org = results.role.organization;
         // Successful, so render.
         res.render('role_delete', { 
             title: "Delete role '" + results.role.name + "'" + " from organization '" + results.role.organization.name + "'",
-            role: results.role } );
+            role: results.role,
+            org: req.body.org } );
     });
 
 };
@@ -237,6 +239,7 @@ exports.role_training_create_get = function(req, res, next) {
     }); 
 };
 
+//TODO avoid dujplicates on add and modify role/training
 // add a training requirement to a role POST
 exports.role_training_create_post = function (req, res, next) {
 
@@ -251,8 +254,7 @@ exports.role_training_create_post = function (req, res, next) {
 
         // add the new training requirement to the existing training list
         role.trainings.push(req.body.training);
-        console.log('role trainings ' + role.trainings);
-
+ 
         // create a new role record from the validiated and sanitized data.
         var newRole = new Role ( {
             trainings: role.trainings,
@@ -268,10 +270,7 @@ exports.role_training_create_post = function (req, res, next) {
             res.redirect ('/roles/role/'+req.params.id+'/training');
 
         });
-                   
     });
-
-
 }
 
 // Display person's leave modify form on GET.
@@ -285,11 +284,6 @@ exports.role_training_modify_get = function(req, res, next) {
         },
         } ,function(err, results) {
             if (err) { return next(err); }
-            if (results.role==null) {
-                var err = new Error('Role not found');
-                err.status = 404;
-                return next(err);
-            }
             res.render('role_training_form', { 
                 title: "Modify training requirements for role '" + results.role.name + "'", 
                 role: results.role, 
@@ -306,13 +300,7 @@ exports.role_training_modify_post = function (req, res, next) {
     // load the current role record so it's training array can be updated
     Role.findById(req.params.id).populate('trainings').exec(function(err, role) {
         if (err) { return next(err); }
-        if (role==null) {
-            var err = new Error('Role not found');
-            err.status = 404;
-            return next(err);
-        }
 
- 
         // create a new role record from the validiated and sanitized data.
         var newRole = new Role ( {
             trainings: role.trainings,
@@ -323,16 +311,13 @@ exports.role_training_modify_post = function (req, res, next) {
         });
 
         // replace the current training requirement with the new one
-        console.log('role trainings ' + role.trainings);
         for (i in role.trainings) {
-            console.log('this training ' + newRole.trainings[i]);
             if (newRole.trainings[i].id == req.params.trainingid) {
                 newRole.trainings[i] = req.body.training;
                 break;
             }
         }
-        console.log('newrole trainings ' + newRole.trainings);
-        
+
         // update the record and return to role training list
         Role.findByIdAndUpdate(req.params.id, newRole, {}, function (err) {
             if (err) { return next(err); }
@@ -354,22 +339,15 @@ exports.role_training_delete_get = function(req, res, next) {
         },
     }, function(err, results) {
         if (err) { return next(err); }
-        if (results.role==null) { // No results.
-            res.redirect('/organizations');
-        }
-        if (results.training==null) { // No results.
-            res.redirect('/organizations');
-        }
         // Successful, so render.
         res.render('role_training_delete', { 
-            title: "Delete training '" + results.training + "' from role '" + results.role.name +"'", 
+            title: "Delete training '" + results.training.name + "' from role '" + results.role.name +"'", 
             role: results.role,
             training: results.training } );
     });
 
 };
 
-// TODO can't seem to locate correct training array element to remove???
 // Handle role delete on POST.
 exports.role_training_delete_post = function(req, res, next) {
 
@@ -390,15 +368,12 @@ exports.role_training_delete_post = function(req, res, next) {
         });
 
         // remove the current training requirement with the new role record
-        console.log('role trainings ' + newRole.trainings);
         for (i in newRole.trainings) {
-            console.log('this training ' + newRole.trainings[i]);
-            if (newRole.trainings[i].id == req.params.trainingid) {
+            if (newRole.trainings[i] == req.params.trainingid) {
                 newRole.trainings.splice(i, 1);
                 break;
             }
         }
-        console.log('newrole trainings ' + newRole.trainings);
         
         // update the record and return to role training list
         Role.findByIdAndUpdate(req.params.id, newRole, {}, function (err) {

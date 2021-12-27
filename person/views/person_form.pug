@@ -37,6 +37,9 @@ block content
                         else
                             option(value=org.id)  #{org.name}
         button.btn.btn-primary(type='submit') Submit
+        p
+        a(href='/persons/'+org)
+            button.btn.btn-danger(type='button') Cancel
     if errors 
         ul  
             for error in errors 

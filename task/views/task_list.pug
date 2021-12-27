@@ -1,10 +1,12 @@
 extends ../../views/layout
-//- TODO modify button is not showing
 block content
     h1= title
     - var addurl = '/tasks/job/' +job.id+ '/create/'
-    button(type='button' class='btn btn-large btn-primary') 
-        a(href=addurl style="color:white") Add Task
+    a(href=addurl)
+        button.btn.btn-large.btn-primary(type='button') Add New Task to Job
+    p
+    a(href='/jobs/'+org)
+        button.btn.btn-primary(type='button') Return to Job List
     if task_list.length != 0
         table(class='table' id='job-table')
             thread 

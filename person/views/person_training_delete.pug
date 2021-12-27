@@ -1,7 +1,7 @@
 extends ../../views/layout
 
 block content
-  h1= "Training '"+ training.name + "' for Person '" + person.fullName + "'"
+  h1= "Training '"+ person_training.name + "' for Person '" + person.fullName + "'"
   
   p Do you really want to delete this training record?
 
@@ -10,3 +10,6 @@ block content
       input#person_trainingid.form-control(type='hidden',name='person_trainingid', required='true', value=person_training._id )
 
     button.btn.btn-primary(type='submit') Delete
+    p
+    a(href='/persons/person/'+person.id+'/person_training')
+        button.btn.btn-danger(type='button') Cancel

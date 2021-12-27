@@ -30,6 +30,9 @@ block content
                                 label.red(for='#{person.id}') {person.fullName}
                 irole= irole+1
         button.btn.btn-primary(type='submit' name='save' value='save') Save
+        p 
+        a(href='/tasks/job/'+job.id)
+            button.btn.btn-danger(type='button') Cancel
     if errors 
         ul  
             for error in errors 

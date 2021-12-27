@@ -4,7 +4,7 @@ var router = express.Router();
 var role_controller = require('../controllers/roleController');
 
 /* GET request for list of roles in an organization */
-router.get('/:orgid', role_controller.organization_role_list);
+router.get('/:orgId', role_controller.organization_role_list);
 
 /* GET request for creating a role for an organization */
 router.get('/:orgId/create', role_controller.role_create_get);

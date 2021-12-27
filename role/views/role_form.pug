@@ -19,6 +19,9 @@ block content
                 placeholder='Description of Role'
                 required='false' value=(undefined==role ? '' : role.description))
         button.btn.btn-primary(type='submit') Submit
+        p
+        a(href='/roles/'+org)
+            button.btn.btn-danger(type='button') Cancel
     if errors 
         ul  
             for error in errors 

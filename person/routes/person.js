@@ -60,10 +60,10 @@ router.get('/person/:id/person_training/:trainingid/modify', person_controller.p
 /* POST request for modfying person_training */
 router.post('/person/:id/person_training/:trainingid/modify', person_controller.person_training_modify_post);
 
-// /* GET request for deleting person's person_training */
-// router.get('/person/:id/person_training/:trainingid/delete', person_controller.person_training_delete_get);
+/* GET request for deleting person's person_training */
+router.get('/person/:id/person_training/:trainingid/delete', person_controller.person_training_delete_get);
 
-// /* POST request for deleting a person's person_training */
-// router.post('/person/:id/person_training/:trainingid/delete', person_controller.person_training_delete_post);
+/* POST request for deleting a person's person_training */
+router.post('/person/:id/person_training/:trainingid/delete', person_controller.person_training_delete_post);
 
 module.exports = router;

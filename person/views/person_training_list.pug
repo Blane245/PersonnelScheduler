@@ -5,7 +5,10 @@ block content
     - var addurl = '/persons/person/' +person.id+ '/person_training/create/'
     a(href=addurl)
         button.btn.btn-large.btn-primary(type='button') Add Training Record
-    if person_trainings
+    p
+    a(href='/persons/'+person.organization)
+        button.btn.btn-primary(type='button') Return to Person List
+    if person_trainings.length != 0
         table(class='table' id='training-table')
             thread 
                 tr 

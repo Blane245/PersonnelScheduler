@@ -3,8 +3,12 @@ extends ../../views/layout
 block content
     h1= title
     - var addurl = '/roles/' +organization.id+ '/create/'
-    button(type='button' class='btn btn-large btn-primary') 
-        a(href=addurl style="color:white") Add Role
+    a(href=addurl)
+        button.btn.btn-large.btn-primary(type='button') Add New Role 
+    p
+    a(href='/organizations')
+        button.btn.btn-primary(type='button') Return to Organization List
+    p
     if role_list.length != 0
         table(class='table' id='role-table')
             thread 

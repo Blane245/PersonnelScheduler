@@ -3,8 +3,11 @@ extends ../../views/layout
 block content
     h1= title
     - var addurl = '/roles/role/' +role.id+ '/training/create/'
-    button(type='button' class='btn btn-large btn-primary') 
-        a(href=addurl style="color:white") Add Training to Role
+    a(href=addurl)
+        button.btn.btn-large.btn-primary(type='button') Add Training Requirement to Role
+    p
+    a(href='/roles/'+role.organization)
+        button.btn.btn-primary(type='button') Return to Role List
     if trainings.length != 0
         - trainings.sort(function(a, b) {let textA = a.name.toUpperCase(); let textB = b.name.toUpperCase(); return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;});
         table(class='table' id='training-table')
@@ -21,10 +24,10 @@ block content
                         td(class='text-left') #{training.name}
                         td(class='text-left') #{training.description}
                         td(class='text-center')
-                            //- button(type='button' class='btn btn-small btn-primary') 
-                            a(href='/roles/role/'+role.id+'/training/'+training.id+'/modify' style="color:blue") M
+                            a(href='/roles/role/'+role.id+'/training/'+training.id+'/modify')
+                                button(type='button' class='btn btn-small btn-primary') 
                         td(class='text-center')
-                            //- button(type='button' class='btn btn-small btn-danger') 
-                            a(href='/roles/role/'+role.id+'/training/'+training.id+'/delete' style="color:red") D
+                            a(href='/roles/role/'+role.id+'/training/'+training.id+'/delete') 
+                                button(type='button' class='btn btn-small btn-danger') 
     else
         li There are no training requirements for role #{role.name}

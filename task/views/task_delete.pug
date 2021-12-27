@@ -11,3 +11,6 @@ block content
       input#taskid.form-control(type='hidden',name='taskid', required='true', value=task._id )
 
     button.btn.btn-primary(type='submit') Delete
+    p
+    a(href='/jobs/job/'+job.id+'/tasks')
+      button.btn.btn-danger(type='button') Cancel

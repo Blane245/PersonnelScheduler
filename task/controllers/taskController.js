@@ -7,6 +7,7 @@ const Job = require('../../models/job');
 const Role = require('../../models/role');
 const Task = require('../../models/task');
 const Training = require('../../models/training');
+const job = require('../../models/job');
 
 // this controller does the heavy lifting of the Personnel Scheduling app
 // Tasks are what people do. In here are the CRUD controller for tasks
@@ -40,6 +41,7 @@ exports.task_list_get = function (req, res, next) {
             '../views/task_list', 
             { title: "Task List for Job '"+ results.job.name + "'",
              job: results.job, 
+             org: results.job.org,
              task_list: results.tasks });
 
     });
@@ -50,7 +52,10 @@ exports.task_create_get = function(req, res, next) {
     Job.findById(req.params.id)
         .exec(function (err, job) {
         if (err) { return next(err);}
-        res.render('task_form', { title: "Create Task for Job '" + job.name + "'"});
+        res.render('task_form', { 
+            title: "Create Task for Job '" + job.name + "'",
+            job:job    }
+        );
 
     });
 };
@@ -97,13 +102,14 @@ exports.task_create_post = [
                         description: req.body.description,
                         startDate: req.body.startDate,
                         endDate: req.body.endDate,
-                        job: req.params.id
+                        job: job
                     });
             
                 if (errors.length !=0) {
                     res.render('task_form', {
                         title: "Create Task for Job '" + job.name + "'", 
                         task: task,
+                        job: job,
                         errors: errors });
                 } else {
                     
@@ -141,6 +147,7 @@ exports.task_modify_get = function(req, res, next) {
             if (err) { return next(err); }
             res.render('task_form', { 
                 title: "Modify task '" + results.task.name + "' for job '"+results.task.job.name+"'", 
+                job: results.task.job,
                 task: results.task});    
         }
     );
@@ -189,7 +196,8 @@ exports.task_modify_post = [
                 if (errors.length != 0) {
                     res.render('task_form', { 
                         title: "Modify task '" + task.name + "' for job '" + task.job.name + "'", 
-                        task: newTask,    
+                        task: newTask,
+                        job: task.job,    
                         errors: errors });
                 } else {
 
@@ -405,6 +413,7 @@ exports.task_delete_get = function(req, res, next) {
         if (err) { return next(err); }
         res.render('task_delete', { 
             title: "Delete task '" + results.task.name + "' from job '" + results.job.name + "'" ,
+            job: results.job,
             task: results.task} );
     });
 

@@ -11,3 +11,6 @@ block content
       input#jobid.form-control(type='hidden',name='jobid', required='true', value=job._id )
 
     button.btn.btn-primary(type='submit') Delete
+    p
+    a(href='/jobs/'+job.organization.id)
+      button.btn.btn-danger(type='submit') Cancel

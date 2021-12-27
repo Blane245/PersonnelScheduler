@@ -34,6 +34,9 @@ block content
                         option(value='Temporary') Temporary 
                         option(value='Permanent') Permanent
         button.btn.btn-primary(type='submit') Submit
+        p
+        a(href='/persons/person/'+person.id+'/leave')
+            button.btn.btn-danger(type='button') Cancel
     if errors 
         ul  
             for error in errors 

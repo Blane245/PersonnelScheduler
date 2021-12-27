@@ -19,6 +19,9 @@ block content
                 placeholder='Description of training'
                 required='false' value=(undefined==training ? '' : training.description))
         button.btn.btn-primary(type='submit') Submit
+        a(href='/trainings/'+org)
+            button.btn.btn-danger(type='submit') Cancel
+
     if errors 
         ul  
             for error in errors 

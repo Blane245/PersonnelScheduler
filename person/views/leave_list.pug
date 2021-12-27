@@ -5,7 +5,10 @@ block content
     - var addurl = '/persons/person/' +person.id+ '/leave/create/'
     a(href=addurl)
         button.btn.btn-large.btn-primary(type='button') Add Leave
-    if leaves
+    p
+    a(href='/persons/'+person.organization)
+        button.btn.btn-primary(type='button') Return to Person List
+    if leaves.length != 0
         table(class='table' id='person-table')
             thread 
                 tr 

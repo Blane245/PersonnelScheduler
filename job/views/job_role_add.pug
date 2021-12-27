@@ -9,6 +9,9 @@ block content
                 for role in roles
                     option(value=role._id) #{role.name}
         button.btn.btn-primary(type='submit') Submit
+        p
+        a(href='/jobs/job/'+job.id+'/roles')
+            button.btn.btn-danger(type='button') Cancel
 
     if errors
         ul

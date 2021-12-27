@@ -34,9 +34,12 @@ block content
                         required='true' 
                         value=(undefined===task ? '' : task.endDate_formatted))        
         button.btn.btn-primary(type='submit' name='save' value='save') Save
-        br
-        br
+        p
         button.btn.btn-primary(type='submit' name='assign' value='assign') Save and Make Role Assignments
+        p 
+        a(href='/jobs/job/'+job.id+'/tasks')
+            button.btn.btn-danger(type='button') Cancel
+
     if errors 
         ul  
             for error in errors 
