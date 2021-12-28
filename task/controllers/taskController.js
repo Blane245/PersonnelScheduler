@@ -96,11 +96,15 @@ exports.task_create_post = [
                 }
 
                 // create an task object with escaped and trimmed data
+                var persons = [];
+                persons.length = job.roles.length;
                 var task = new Task ( 
                     { name: req.body.name,
                         description: req.body.description,
                         startDate: req.body.startDate,
                         endDate: req.body.endDate,
+                        roles: job.roles,
+                        persons: persons,
                         job: job
                     });
             
@@ -189,6 +193,7 @@ exports.task_modify_post = [
                     endDate: req.body.endDate,
                     job: task.job.id,
                     persons: task.persons,
+                    roles: task.roles,
                     _id: req.params.taskid
                     });
             
@@ -237,7 +242,7 @@ exports.task_assign_get =  function (req, res, next) {
         Person.find({'organzation': job.organization.id}).exec(function (err, orgPersons) {
             if (err) { return next(err);}
 
-            Task.findById(req.params.taskid).populate('persons').exec(function (err, task) {
+            Task.findById(req.params.taskid).populate('persons').populate('roles').exec(function (err, task) {
                 if (err) { return next(err);}
 
                 // we need to body each person's availability for the task
@@ -246,7 +251,7 @@ exports.task_assign_get =  function (req, res, next) {
                 // process each role for the job in turn
                 var irole = 0
                 var rolepersons = [];
-                for (const role in job.role) {
+                for (const role in task.roles) {
 
                     Role.findById(role.id).populate('trainings').exec(function (err, thisRole) {
                         if (err) {next(err);}
@@ -310,7 +315,7 @@ function isAvailable (startDate, endDate, leaves) {
 
     var available = true;
     for (const leave in leaves) {
-        if (leave.startDate <= endDate && leave.endDate > startDate)
+        if (leave.startDate <= endDate && leave.endDate && leave.endDate > startDate)
             available = false;
         if (leave.startDate <= endDate && !leave.endDate)
             available = false;
@@ -333,7 +338,7 @@ function isQualified (endDate, role, role_trainings, person_trainings) {
 
             // skip if this training is not relavent
             if (required_training.name == person_training.name) {
-                if (person_training.expirationDate <= endDate) {
+                if (person_training.expirationDate && person_training.expirationDate <= endDate) {
                     qualified = false;
                     break;
                 }
@@ -377,7 +382,7 @@ exports.task_assign_post =  function (req, res, next) {
     // person for each role
     var irole = 0;
     var pickedPersons = [];
-    for (const role in job.roles) {
+    for (const role in task.roles) {
         var groupName = 'Role' + irole.toString();
         pickedPersons.push(req.params[groupName]);
         irole++;
@@ -389,7 +394,8 @@ exports.task_assign_post =  function (req, res, next) {
         startDate: task.startDate,
         endDate: task.endDate,
         job: task.job,
-         persons: pickedPersons,
+        persons: pickedPersons,
+        roles: task.roles,
         _id: task.id
     });
 

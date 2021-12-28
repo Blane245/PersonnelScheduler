@@ -1,8 +1,7 @@
-// TODO add role array to task record so new tasks can inherit changes in job/role list
-// do not allow changes to task role list 
-// TODO implement checks for children before allowing delete (organization, person, role, job)
+// TODO build test data for testing task role assignment
+// TODO test task role assignment
+// TODO implement checks for children before allowing delete (job,role,person->task, training->role,person) 
 // TODO check for relationships before allowing modify and delete (job/role, person/task)
-// TODO normalize list pages - table format
 // TODO - implement copy function for job to replicate another one with same roles
 // TODO - implement move role up and down job list
 var createError = require('http-errors');

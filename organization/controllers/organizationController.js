@@ -1,7 +1,9 @@
 var Organization = require('../../models/organization');
+var Job = require('../../models/job');
+var Role = require('../../models/role');
+var Person = require('../../models/person');
 const { body, validationResult } = require('express-validator');
 var async = require('async');
-const organization = require('../../models/organization');
 
 exports.organization_list = function (req, res, next) {
     Organization.find({}, 'name description')
@@ -127,10 +129,54 @@ exports.organization_delete_get = function(req, res, next) {
 
 // Handle organization delete on POST.
 exports.organization_delete_post = function(req, res, next) {
-    Organization.findByIdAndRemove(req.params.id, function (err) {
-        if (err) { return next(err); }
-        // Success - go to organization list
-        res.redirect('/organizations')
+
+    // check if there are any children of the organization.
+    // If so, report the number and prevent delete
+    async.parallel({
+        job_count: function(callback) {
+            Job.countDocuments({'organization': req.params.id}, callback);
+        },
+        
+        person_count: function(callback) {
+            Person.countDocuments({'organization': req.params.id}, callback);
+        },
+        
+        role_count: function(callback) {
+            Role.countDocuments({'organization': req.params.id}, callback);
+        },
+        
+    }, function (err, results){
+        var errors = validationResult(req).array();
+        if (results.job_count != 0) {
+            errors.push({msg: results.job_count + ' Jobs must be deleted before the organization can be deleted.'});
+        }
+        if (results.person_count != 0) {
+            errors.push({msg: results.person_count + ' Personnel must be removed before the organization can be deleted.'});
+        }
+        if (results.role_count != 0) {
+            errors.push({msg: results.role_count + ' Roles must be deleted before the organization can be deleted.'});
+        }
+
+        Organization.findById(req.params.id).exec (function (err, org) {
+            if (err) { return next(err); }
+
+            // redisplay the delete post page with errors
+            if (errors.length !=0) {
+                res.render('organization_delete', { 
+                    title: "Delete organization '"+org.name+"'",
+                    organization: org,
+                    errors:errors } );
+            } else {
+
+                // otherwise delete the record
+                Organization.findByIdAndRemove(req.params.id, function (err) {
+                    if (err) { return next(err); }
+                    res.redirect('/organizations')
+                });
+            }
+            
+        });
     });
-};
+}
+
 
