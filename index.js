@@ -2,7 +2,6 @@
 // do not allow changes to task role list 
 // TODO implement checks for children before allowing delete (organization, person, role, job)
 // TODO check for relationships before allowing modify and delete (job/role, person/task)
-// TODO dates 'walking'
 // TODO normalize list pages - table format
 // TODO - implement copy function for job to replicate another one with same roles
 // TODO - implement move role up and down job list

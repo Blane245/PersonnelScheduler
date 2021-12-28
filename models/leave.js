@@ -23,7 +23,7 @@ LeaveSchema
 LeaveSchema
   .virtual('startDate_formatted')
   .get(function() {
-    return DateTime.fromJSDate(this.startDate).toFormat('yyyy-MM-dd');
+    return DateTime.fromJSDate(this.startDate, {zone:'UTC'}).toFormat('yyyy-MM-dd');
   });
 LeaveSchema
 .virtual('endDate_formatted')
@@ -31,6 +31,6 @@ LeaveSchema
   if (this.endDate == null)
     return '-';
   else
-    return DateTime.fromJSDate(this.endDate).toFormat('yyyy-MM-dd');
+    return DateTime.fromJSDate(this.endDate, {zone:'UTC'}).toFormat('yyyy-MM-dd');
 });
 module.exports = mongoose.model('Leave', LeaveSchema);

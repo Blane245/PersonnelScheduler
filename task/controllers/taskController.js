@@ -7,7 +7,6 @@ const Job = require('../../models/job');
 const Role = require('../../models/role');
 const Task = require('../../models/task');
 const Training = require('../../models/training');
-const job = require('../../models/job');
 
 // this controller does the heavy lifting of the Personnel Scheduling app
 // Tasks are what people do. In here are the CRUD controller for tasks
@@ -69,8 +68,8 @@ exports.task_create_post = [
     // validate and sanitize fields
     body('name', 'Name must not be empty.').trim().isLength({min: 1}),
     body('description', '').trim(),
-    body('startDate', 'Start Date must be a valid date.').isDate(),
-    body('endDate', 'End Date must be a valid date.').isDate()
+    body('startDate', 'Start Date must be a valid date.').isISO8601().toDate(),
+    body('endDate', 'End Date must be a valid date.').isISO8601().toDate()
     .custom((value, { req }) => {
         if (value < req.body.startDate) {
             throw new Error('End Date must be greater than or equal to Start Date.');

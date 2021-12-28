@@ -3,6 +3,8 @@ extends ../../views/layout
 block content
   h1= title
   h2= 'Description: ' + task.description
+  h2= 'Start Date: ' + task.startDate_formatted
+  h2= 'End Date: ' + task.endDate_formatted
 
   p Do you really want to delete this task?
 
