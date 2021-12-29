@@ -168,7 +168,6 @@ exports.person_modify_post = [
 ];
 
 // Display person delete form on GET.
-// TODO prevent deletion when person has related tasks
 exports.person_delete_get = function(req, res, next) {
 
     Person.findById(req.params.id).populate('organization')

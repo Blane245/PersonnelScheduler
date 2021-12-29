@@ -8,7 +8,7 @@ var Person_TrainingSchema = new Schema(
   {
     person: {type: Schema.Types.ObjectId, ref: 'Person', required: true},
     training: {type: Schema.Types.ObjectId, ref: 'Training', required: true},
-    expirationDate: {type: Date, required: true},
+    expirationDate: {type: Date, required: false},
   }
 );
 

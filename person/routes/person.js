@@ -1,7 +1,6 @@
 var express = require('express');
 var router = express.Router();
 var person_controller = require('../controllers/personController');
-// TODO retest because of several changes
 
 /* GET request for list of persons in an organization */
 router.get('/:orgid', person_controller.organization_person_list);
