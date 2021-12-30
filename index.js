@@ -1,5 +1,3 @@
-// TODO remove leave type as permanent leave is leave without an end date
-// TODO build test data for testing task role assignment
 // TODO test task role assignment
 // TODO implement checks for children before allowing delete (job,role,person->task, training->role,person) 
 // TODO check for relationships before allowing modify and delete (job/role, person/task)

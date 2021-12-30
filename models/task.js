@@ -29,10 +29,7 @@ TaskSchema
 TaskSchema
     .virtual('endDate_formatted')
     .get(function() {
-    if (this.endDate == null)
-        return '-';
-    else
-        return DateTime.fromJSDate(this.endDate, {zone:'UTC'}).toFormat('yyyy-MM-dd');
+      return DateTime.fromJSDate(this.endDate, {zone:'UTC'}).toFormat('yyyy-MM-dd');
 });
 
 module.exports = mongoose.model('Task', TaskSchema);

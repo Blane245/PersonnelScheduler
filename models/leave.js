@@ -9,7 +9,6 @@ var LeaveSchema = new Schema(
     name: {type: String, required: true},
     startDate: {type: Date, required: true},
     endDate: {type: Date, required: false},
-    duration: {type: String, required: true, enum: ['Temporary', 'Permanent'], default: 'Temporary'},
   }
 );
 
@@ -29,7 +28,7 @@ LeaveSchema
 .virtual('endDate_formatted')
 .get(function() {
   if (this.endDate == null)
-    return '-';
+    return '';
   else
     return DateTime.fromJSDate(this.endDate, {zone:'UTC'}).toFormat('yyyy-MM-dd');
 });

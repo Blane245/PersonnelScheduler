@@ -244,15 +244,14 @@ exports.person_leave_create_post = [
     
     // validate and sanitize fields
     body('name', 'Leave name must be given.').trim().isLength({min: 1}).escape(),
-    body('startDate', 'Start Date must be a valid.').isDate(),
-    body('endDate', 'End Date must be a valid date.').isDate()
+    body('startDate', 'Start Date must be a valid.').isISO8601(),
+    body('endDate', 'End Date must be a valid date.').optional({ checkFalsy: true }).isISO8601()
     .custom((value, { req }) => {
-        if (value < req.body.startDate) {
+        if (value && value < req.body.startDate) {
             throw new Error('End Date must be greater than or equal to Start Date.');
         }
         return true;
     }),
-    body('duration', '').escape(),
 
     // save the new leave
     (req, res, next) => {
@@ -265,7 +264,6 @@ exports.person_leave_create_post = [
             name: req.body.name,
             startDate : req.body.startDate,
             endDate: req.body.endDate,
-            duration: req.body.duration,
             person: req.params.id
         });
 
@@ -315,14 +313,14 @@ exports.person_leave_modify_get = function(req, res, next) {
 exports.person_leave_modify_post = [
     // validate and sanitize fields.
     body('name', 'Leave name must not be empty.').trim().isLength({min: 1}).escape(),
-    body('startDate', 'Start Date must be a valid.').toDate(),
-    body('endDate', 'End Date must be a valid date.').isDate()
+    body('startDate', 'Start Date must be a valid.').isISO8601(),
+    body('endDate', 'End Date must be a valid date.').optional({ checkFalsy: true, nullable: true }).isISO8601().toDate()
     .custom((value, { req }) => {
-        if (value < req.body.startDate) {
+        if (value && value < req.body.startDate) {
             throw new Error('End Date must be greater than or equal to Start Date.');
         }
         return true;
-    }),
+    }), 
     body('duration', '').escape(),
 
     // process request after validation and sanittzation
@@ -446,7 +444,7 @@ exports.person_training_create_post = [
     
     // validate and sanitize fields
     body('training', '').escape(),
-    body('expirationDate', 'Training expiration date must be a valid.').optional({ checkFalsy: true }).isISO8601().toDate(),
+    body('expirationDate', 'Training expiration date must be a valid.').optional({ checkFalsy: true }).isISO8601(),
 
     // save the new person_training record
     (req, res, next) => {
@@ -513,7 +511,7 @@ exports.person_training_modify_get = function(req, res, next) {
 exports.person_training_modify_post = [
     // validate and sanitize fields.
     body('training', '').escape(),
-    body('expirationDate', 'Training expiration date must be a valid.').optional({ checkFalsy: true }).isISO8601().toDate(),
+    body('expirationDate', 'Training expiration date must be a valid.').optional({ checkFalsy: true }).isISO8601(),
  
     // process request after validation and sanittzation
     (req, res, next) => {

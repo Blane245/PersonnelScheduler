@@ -21,6 +21,9 @@ Person_TrainingSchema
 Person_TrainingSchema
 .virtual('expirationDate_formatted')
 .get(function() {
-return DateTime.fromJSDate(this.expirationDate, {zone:'UTC'}).toFormat('yyyy-MM-dd');
+  if (this.expirationDate)
+    return DateTime.fromJSDate(this.expirationDate, {zone:'UTC'}).toFormat('yyyy-MM-dd');
+  else
+    return "";
 });
 module.exports = mongoose.model('Person_Training', Person_TrainingSchema);

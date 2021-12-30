@@ -28,11 +28,6 @@ block content
                         font-size='3rem'
                         required='false' 
                         value=(undefined===leave ? '' : leave.endDate_formatted))        
-                div(class='col-sm-4')
-                    label(for='duration') Leave duration: 
-                    select#type.form-control(type='select', placeholder='Select leave duration' name='duration' required='true')
-                        option(value='Temporary') Temporary 
-                        option(value='Permanent') Permanent
         button.btn.btn-primary(type='submit') Submit
         p
         a(href='/persons/person/'+person.id+'/leave')

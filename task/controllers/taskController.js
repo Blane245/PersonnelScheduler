@@ -68,8 +68,8 @@ exports.task_create_post = [
     // validate and sanitize fields
     body('name', 'Name must not be empty.').trim().isLength({min: 1}),
     body('description', '').trim(),
-    body('startDate', 'Start Date must be a valid date.').isISO8601().toDate(),
-    body('endDate', 'End Date must be a valid date.').isISO8601().toDate()
+    body('startDate', 'Start Date must be a valid date.').isISO8601(),
+    body('endDate', 'End Date must be a valid date.').isISO8601()
     .custom((value, { req }) => {
         if (value < req.body.startDate) {
             throw new Error('End Date must be greater than or equal to Start Date.');
@@ -160,9 +160,9 @@ exports.task_modify_get = function(req, res, next) {
 exports.task_modify_post = [
     // validate and sanitze fields.
     body('name', 'Name must not be empty.').trim().isLength({min: 1}),
-    body('startDate', 'Start date must be a valid date.').isDate(),
+    body('startDate', 'Start date must be a valid date.').isISO8601(),
     body('description', '').trim(),
-    body('endDate', 'End Date must be a valid date.').isDate()
+    body('endDate', 'End Date must be a valid date.').isISO8601()
     .custom((value, { req }) => {
         if (value < req.body.startDate) {
             throw new Error('End Date must be greater than or equal to Start Date.');
