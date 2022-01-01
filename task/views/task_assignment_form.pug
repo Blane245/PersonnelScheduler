@@ -2,38 +2,80 @@ extends ../../views/layout
 
 block content
     h1= title
+    p Each person in the organization may be available for the job and qualified for zero or more roles
+    p If a person is 
+    ul 
+        li Available and Qualified, the name is #[strong.text-primary this color]
+        li #[strong Not] Available but Qualified, the name is #[strong.text-success this color]
+        li Available but #[strong Not] Qualified, the name is #[strong.text-warning this color]
+        li #[strong Not] Available and #[strong Not] Qualified, the name is #[strong.text-danger this color]
+    p Once a person is selected, the name is displayed #[strong.text-muted muted]
     form(method='POST' action='' novalidate )
         //- loop through each role 
         if roles && roles.length != 0 
-            var irole = 0
-            div.form-group 
-                for role in roles 
-                    hr
-                    h2= 'Role: ' + role.name 
-                    hr
-
-                    //- loop through each person in the organization building a radio button list
-                    //- and indicating is they are qualified, available, and selected
-                    for person in role.persons 
-                        div.form-group
-                            if (person.selected)
-                                input(type='radio' id='#{person.id}' name='Role#{irole}' value='#{person.id}' checked='checked')
-                            else
-                                input(type='radio' id='#{person.id}' name='Role#{irole}' value='#{person.id}')
-                            if (person.qualified && person.avaiable)
-                                label.white(for='#{person.id}') {person.fullName}
+            - var irole = 0
+            for role in roles 
+                hr
+                //- loop through each person in the organization building a slection list
+                //- and indicating is they are qualified, available, and selected
+                div.form-group
+                    - var roleTag = 'Role'+irole
+                    - var s = 'text-dark'
+                    - var t
+                    label(for=roleTag) #[strong #{role.name}]
+                    select.form-control(type='select', placeholder='Select person' id=roleTag name=roleTag required='true' )
+                        option(value='') --- Select Person for Role --- 
+                        for person in role.persons 
+                            if (person.qualified && person.available)
+                                - s = 'text-primary'
+                                - t = person.name + ' (qualified and available)'
                             else if (person.qualified && !person.available)
-                                label.green(for='#{person.id}') {person.fullName}
-                            else if (!person.qualified && person.avaiable)
-                                label.orange(for='#{person.id}') {person.fullName}
-                            else if (!person.qualified && !person.avaiable)
-                                label.red(for='#{person.id}') {person.fullName}
-                irole= irole+1
-        button.btn.btn-primary(type='submit' name='save' value='save') Save
+                                - s = 'text-success'
+                                - t = person.name + ' (qualified and not available)'
+                            else if (!person.qualified && person.available)
+                                - s = 'text-warning'
+                                - t = person.name + ' (not qualified but available)'
+                            else if (!person.qualified && !person.available)
+                                - s = 'text-danger'
+                                - t = person.name + ' (not qualified and not available)'
+                            if (person.selected)
+                                option(value=person.id class=s selected) #{t}
+                            else
+                                option(value=person.id class=s) #{t}
+                - irole++
+        button.btn.btn-primary(type='submit' name='save' value='save' onclick='checkDuplicates(event)') Save
         p 
-        a(href='/tasks/job/'+job.id)
-            button.btn.btn-danger(type='button') Cancel
+        a(href='/jobs/job/'+job.id+'/tasks')
+            button.btn.btn-danger(type='button' ) Cancel
+    p.text-danger(id='validationErrors')
     if errors 
         ul  
-            for error in errors 
-                li!= error.msg
+        for error in errors
+            li!= err.msg
+    script(type='text/javascript').
+        function checkDuplicates(event) {
+            var nRoles =  #{roles.length};
+            var personIDs = [];
+            var roleNames = [];
+            for (let i = 0; i < nRoles; i++) {
+                roleNames[i] = 'Role' + i;
+                personIDs[i] = document.getElementById(roleNames[i]).value;
+                console.log(personIDs[i]);
+            }
+            var nErrors = 0;
+            document.getElementById('validationErrors').innerHTML = '';
+            for (let i = 0; i < nRoles; i++) {
+                if (personIDs[i] != '') {
+                    for (let j = i+1; j < nRoles; j++) {
+                        if (personIDs[i] == personIDs[j]) {
+                        document.getElementById('validationErrors').innerHTML =  
+                                document.getElementById('validationErrors').innerHTML + 
+                                '<br> The same person is assignd to ' + roleNames[i] + ' and ' + roleNames[j] + '. ';
+                            nErrors++;
+                        }
+                    }
+                }
+            }
+            if (nErrors != 0)
+                event.preventDefault();
+        }

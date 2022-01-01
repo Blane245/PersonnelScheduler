@@ -97,13 +97,14 @@ exports.task_create_post = [
 
                 // create an task object with escaped and trimmed data
                 var persons = [];
-                persons.length = job.roles.length;
+                for (let i = 0; i < job.role.length; i++)
+                    persons[i] = new Person();
                 var task = new Task ( 
                     { name: req.body.name,
                         description: req.body.description,
                         startDate: req.body.startDate,
                         endDate: req.body.endDate,
-                        roles: job.roles,
+                        roles: job.role,
                         persons: persons,
                         job: job
                     });
@@ -119,19 +120,16 @@ exports.task_create_post = [
                     // data is valid and sanitized. save it
                     task.save(function (err) {
                         if (err) { return next (err);}
-                        req.params.taskid = task.id;
+                        req.params.taskid = task._id;
+
+                        // if the assign button was pressed, then do the role assignment activity
+                        // otherwise go back to the task list
+                        if (req.body.assign == null)
+                            res.redirect('/jobs/job/'+req.params.id+'/tasks/');
+                        else {
+                            res.redirect('/tasks/job/'+req.params.id+'/task/'+req.params.taskid+'/assign');
+                        }
                     });
-
-                    // if the assign button was pressed, then do the role assignment activity
-                    // otherwise go back to the task list
-                    if (req.params.assign == null)
-                        res.redirect('/jobs/job/'+req.params.id+'/tasks/');
-                    else {
-
-                        // pick up the task record's key and editting the assignment list
-                        task_assign_get (req, res, next);
-                        // this will never return
-                    }
                 }
             });
         });
@@ -208,12 +206,10 @@ exports.task_modify_post = [
                     // data is valid. update the record
                     Task.findByIdAndUpdate(req.params.taskid, newTask, {}, function (err) {
                         if (err) { return next(err); };
-                        if (req.params.assign == null)
+                        if (req.body.assign == null)
                             res.redirect('/jobs/job/'+req.params.id+'/tasks/');
                         else {
-
-                            // pick up the task record's key and editting the assignment list
-                            task_assign_get (req, res, next);
+                            res.redirect('/tasks/job/'+req.params.id+'/task/'+newTask._id+'/assign');
                         }
                     });
                 }
@@ -239,87 +235,88 @@ exports.task_assign_get =  function (req, res, next) {
         if (err) { return next(err);}
 
         // get the persons of the organization
-        Person.find({'organzation': job.organization.id}).exec(function (err, orgPersons) {
+        Person.find({'organization': job.organization}).exec(function (err, orgPersons) {
             if (err) { return next(err);}
 
-            Task.findById(req.params.taskid).populate('persons').populate('roles').exec(function (err, task) {
+            Task.findById(req.params.taskid).populate('roles').exec(function (err, task) {
                 if (err) { return next(err);}
 
-                // we need to body each person's availability for the task
-                // and then if they are available, then body their qaulification for each role
+                // get all the leaves for all of the people in the organization
+                Leave.find({'person': orgPersons}).exec(function (err, leaves) {
+                    if (err) { return next(err);}
+                    // get all the person_trainings for all of the people in the organization
+                    Person_Training.find({'person': orgPersons}).exec(function (err, person_trainings) {
+                        // we need to check each person's availability for the task
+                        // and then if they are available, then check their qualification for each role
 
-                // process each role for the job in turn
-                var irole = 0
-                var rolepersons = [];
-                for (const role in task.roles) {
+                        // process each role for the job in turn
+                        var rolepersons = [];
+                        var taskPersons = task.persons;
+                        if (taskPersons.length == 0)
+                            taskPersons.length = task.roles.length;
+                        for (let irole = 0; irole < task.roles.length; irole++) {
+                            var roleName = task.roles[irole].name;
+                            var roleid = task.roles[irole].id;
+                            var roleTrainings = task.roles[irole].trainings;
 
-                    Role.findById(role.id).populate('trainings').exec(function (err, thisRole) {
-                        if (err) {next(err);}
-                        var roleName = thisRole.name;
-                        var roleid = thisRole.id;
-                        var roleTrainings = thisRole.trainings;
-                        var rolePersons = thisRole.persons;
+                            // build the persons array for each role
+                            var personData = [];
+                            for (let iperson = 0; iperson < orgPersons.length; iperson++){
 
-                        // build the persons array for each role
-                        var personData = [];
-                        for (const person in orgPersons) {
+                                var personName = orgPersons[iperson].fullName;
+                                var personId = orgPersons[iperson].id;
+                                
+                                // TODO check other tasks to see if the person is assigned to another task
+                                var available = isAvailable(task.startDate, task.endDate, orgPersons[iperson].id, leaves);
+                                var qualified = isQualified(task.endDate, roleTrainings, person_trainings, orgPersons[iperson].id);
 
-                            var personName = person.fullName;
-                            var personId = person.id;
+                                // see if the person is currently selected
+                                var selected = isSelected (irole, taskPersons, orgPersons[iperson]);
+                                // pile up the data on this person
+                                personData.push (
+                                    {name: personName, 
+                                    id: personId, 
+                                    qualified: qualified, 
+                                    available: available, 
+                                    selected: selected});
+                            }
 
-                            // body leaves for availability
-                            var available = false;
-                            Leave.find({'person':person.id}).exec(function (err, leaves) {
-                                if (err) {return next (err);}
-                                available = isAvailable(task.startDate, task.endDate, leaves);
+                            // pile up the data on this role
+                            rolepersons.push ({
+                                name: roleName,
+                                id: roleid,
+                                persons: personData
                             });
-
-                            // get a persons trainings and body trainings for qualifications for role
-                            var qualified = false;
-                            Person_Training.find({'person':person.id}).expand('training').exec(function (err, person_trainings){
-                                if (err) {return next (err);}
-                                qualified = isQualified(task.endDate, thisRole, roleTrainings, person_trainings)
-                            });
-
-                            var selected = isSelected (irole, rolePersons, person);
-
-                            personData.push (
-                                {name: personName, 
-                                id: personId, 
-                                qualified: qualified, 
-                                available: available, 
-                                selected: selected});
                         }
-                        rolepersons.push ({
-                            name: roleName,
-                            id: roleid,
-                            persons: personData
-                        });
-                    });
-                    irole++;
-                }
+                        
+                        // ready to display the task assignment page
+                        res.render('task_assignment_form', { 
+                            title: "Assign Personnel for Task '" + task.name + "' of Job '" + job.name + "'",
+                            job:job,
+                            roles: rolepersons});
 
-                // ready to display the task assignment page
-                res.render('task_assignment_form', { 
-                    title: 'Assign Personal for Task "' + task.name + '" of Job ' + job.name + '"',
-                    roles: rolepersons});
+                    });
+                });
+
             });
         });
     });
-       
 }
 
 //some helper functions
 // isAvaialble - bodys all of the leaves to see if any of them overlap with the start and end dates
-function isAvailable (startDate, endDate, leaves) {
+function isAvailable (startDate, endDate, person, leaves) {
 
     var available = true;
-    for (const leave in leaves) {
-        if (leave.startDate <= endDate && leave.endDate && leave.endDate > startDate)
+    for (let i = 0; i < leaves.length; i++) {
+        if (leaves[i].person == person) {
+            if (leaves[i].startDate <= endDate && leaves[i].endDate && leaves[i].endDate > startDate)
             available = false;
-        if (leave.startDate <= endDate && !leave.endDate)
-            available = false;
-        if (!available) break;
+            if (leaves[i].startDate <= endDate && !leaves[i].endDate)
+                available = false;
+            if (!available) break;
+
+        };
 
     }
     return available;
@@ -327,82 +324,81 @@ function isAvailable (startDate, endDate, leaves) {
 }
 
 // isQualified - for a person to be qualified, all of their role's equired training
-// record must not expire before the end date of teh task
-function isQualified (endDate, role, role_trainings, person_trainings) {
-    var qualified = true;
+// record must not expire before the end date of the task
+function isQualified (endDate, role_trainings, person_trainings, person) {
+    var qualified = false;
+    var nQuals = 0;
 
-    // now body the person's training records against those required
-    for (const person_training in person_trainings) {
+    // now check the person's training records against those required
+    for (let irt = 0; irt < role_trainings.length; irt++) {
+        for (let ipt = 0; ipt < person_trainings.length; ipt++) {
 
-        for (const required_training in role_trainings) {
-
-            // skip if this training is not relavent
-            if (required_training.name == person_training.name) {
-                if (person_training.expirationDate && person_training.expirationDate <= endDate) {
-                    qualified = false;
-                    break;
-                }
+            // skip if this training is not for the person being processed
+            if (role_trainings[irt] == person_trainings[ipt].training && person == person_trainings[ipt].person) {
+                if (person_trainings[ipt].expirationDate && person_trainings[ipt].expirationDate <= endDate) 
+                    {}
+                else
+                    nQuals++;
 
             }
         }
-
-        if (!qualified)
-            break;
     }
+
+    // person must have all required training for a role
+    if (nQuals == role_trainings.length)
+        qualified = true;
     return qualified;
 }
 
 
 // see if a person is selected for a role 
 function isSelected (irole, persons, person) {
-    return (person == persons[irole]);
+    return (persons[irole] && person.id == persons[irole]);
 
 }
 
 // handle POST for task/person assignments
 exports.task_assign_post =  function (req, res, next) {
 
-    // there is nothing to validate or sanitize
 
     // build up the new task record from the existing one and the new
     // assignment values
-    var task;
-    Task.findById(req.params.taskid).exec(function (err, result) {
+    Task.findById(req.params.taskid).exec(function (err, task) {
         if (err) { return next(err);}
-        task = result;
-    });
 
-    var job;
-    Task.findById(req.params.taskid).expand('roles').exec(function (err, result) {
-        if (err) { return next(err);}
-        job = result;
-    });
+        // loop through the roles retrieve the selected person for each role
+        var irole = 0;
+        var pickedPersons = [];
+        for (const role in task.roles) {
+            var groupName = 'Role' + irole.toString();
+            if (req.body[groupName] != '')
+                pickedPersons.push(req.body[groupName]);
+            else {
+                const person = new Person();
+                pickedPersons.push(person.id);
+            }
+            irole++;
+        }
 
-    // loop through the roles applicable to the job and retrieve the selected
-    // person for each role
-    var irole = 0;
-    var pickedPersons = [];
-    for (const role in task.roles) {
-        var groupName = 'Role' + irole.toString();
-        pickedPersons.push(req.params[groupName]);
-        irole++;
-    }
+        // build the new task record with the person assignment updates
+        newTask = new Task ({
+            name: task.name,
+            description: task.description,
+            startDate: task.startDate,
+            endDate: task.endDate,
+            job: task.job,
+            roles: task.roles,
+            _id: task.id
+        });
+        for (let i = 0; i < task.roles.length; i++) {
+            newTask.persons[i] = pickedPersons[i];
+        }
 
-    newTask = new Task ({
-        name: task.name,
-        description: task.description,
-        startDate: task.startDate,
-        endDate: task.endDate,
-        job: task.job,
-        persons: pickedPersons,
-        roles: task.roles,
-        _id: task.id
-    });
-
-    // update the task record and display the task list page
-    Task.findByIdAndUpdate(task.id, newTask, {}, function (err) {
-        if (err) { return next(err); }
-        res.redirect('/jobs/job/'+req.params.id+'/tasks/');
+        // update the task record and display the task list page
+        Task.findByIdAndUpdate(task.id, newTask, {}, function (err) {
+            if (err) { return next(err); }
+            res.redirect('/jobs/job/'+req.params.id+'/tasks/');
+        });
     });
 
 }

@@ -1,4 +1,3 @@
-// TODO prevent changes to a role list for a job if there are already tasks for the job
 var Job = require('../../models/job');
 var Role = require('../../models/role');
 const { validationResult, body } = require('express-validator');

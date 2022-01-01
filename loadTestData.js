@@ -120,6 +120,10 @@ function TaskCreate(name, description, startDate, endDate, job, roles, cb) {
     // the persons array must be the same size as the roles array and contains null
     persons = []
     persons.length = roles.length;
+    for (let i = 0; i < persons.length; i++) {
+        var person = new Person ({});
+        persons[i] = person;
+    }
     detail.persons = persons;
     var record = new Task(detail);
     record.save(function (err) {

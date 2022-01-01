@@ -1,4 +1,4 @@
-// TODO test task role assignment
+// TODO test task role assignment available, qualified
 // TODO implement checks for children before allowing delete (job,role,person->task, training->role,person) 
 // TODO check for relationships before allowing modify and delete (job/role, person/task)
 // TODO - implement copy function for job to replicate another one with same roles
@@ -28,6 +28,7 @@ app.set('views', [
   path.join(__dirname, 'task/views')
 ]);
 app.set('view engine', 'pug');
+app.set('vew options', {pretty: true});
 
 app.use(logger('dev'));
 app.use(express.json());
