@@ -1,9 +1,9 @@
 var Organization = require('../../models/organization');
 var Job = require('../../models/job');
+var Task = require('../../models/task');
 const { body, validationResult } = require('express-validator');
 var async = require('async');
 const organization = require('../../models/organization');
-const job = require('../../models/job');
 
 // the list of jobs for an organization
 exports.organization_job_list = function (req, res, next) {
@@ -162,9 +162,6 @@ exports.job_delete_get = function(req, res, next) {
         job: function(callback) {
             Job.findById(req.params.id).populate('organization').exec(callback)
         },
-        // organizations_books: function(callback) {
-        //   Book.find({ 'organization': req.params.id }).exec(callback)
-        // },
     }, function(err, results) {
         if (err) { return next(err); }
         if (results.job==null) { // No results.
@@ -184,20 +181,31 @@ exports.job_delete_post = function(req, res, next) {
 
     async.parallel({
         job: function(callback) {
-          Job.findById(req.params.id).exec(callback)
-        },
-        // organizations_books: function(callback) {
-        //   Book.find({ 'organization': req.body.organizationid }).exec(callback)
-        // },
+            Job.findById(req.params.id).exec(callback)},
+        task_count: function(callback) {
+            Task.countDocuments({'job': req.params.id}, callback);},
     }, function(err, results) {
         if (err) { return next(err); }
+
+        var errors = validationResult(req).array();
+        if (results.task_count != 0) {
+            errors.push({msg: results.task_count + ' Tasks must be deleted before the job can be deleted.'});
+        }
+
+        // redisplay the delete post page with errors
+        if (errors.length !=0) {
+            res.render('job_delete', { 
+                title: "Delete job '"+results.job.name+"'",
+                job: results.job,
+                errors:errors } );
+        } else {
             // job has no children. Delete object and redirect to the list of jobs for its organization.
             Job.findByIdAndRemove(results.job.id, function deletejob(err) {
                 if (err) { return next(err); }
                 // Success - go to organization list
                 res.redirect ('/jobs/'+results.job.organization);
-            })
-        // }
+            });
+        }
     });
 };
 

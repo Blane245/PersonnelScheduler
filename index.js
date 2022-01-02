@@ -1,8 +1,6 @@
-// TODO test task role assignment available, qualified
 // TODO implement checks for children before allowing delete (job,role,person->task, training->role,person) 
-// TODO check for relationships before allowing modify and delete (job/role, person/task)
-// TODO - implement copy function for job to replicate another one with same roles
 // TODO - implement move role up and down job list
+// TODO - popups for create, modify, and delete, except for personnel assignment to task
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');

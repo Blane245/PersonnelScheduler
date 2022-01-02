@@ -155,6 +155,8 @@ function LeaveCreate(name, startDate, endDate, person, cb) {
 
 
 
+
+
         function OrganizationLoad(cb) {async.series ([
             function (callback) {OrganizationCreate("organization1", "Organization with 1 job, 4 people, and 4 roles",  callback);},
             function (callback) {OrganizationCreate("organization2", "Organization with 2 jobs, 8 people, and 2 roles",  callback);},
@@ -222,12 +224,15 @@ function LeaveCreate(name, startDate, endDate, person, cb) {
             ],cb);}
         function Person_TrainingLoad(cb) {async.series ([
             function (callback) {Person_TrainingCreate(person[0], training[0], false,  callback);},
-            function (callback) {Person_TrainingCreate(person[0], training[1], false,  callback);},
-            function (callback) {Person_TrainingCreate(person[0], training[2], false,  callback);},
-            function (callback) {Person_TrainingCreate(person[0], training[3], false,  callback);},
-            function (callback) {Person_TrainingCreate(person[0], training[4], false,  callback);},
-            function (callback) {Person_TrainingCreate(person[0], training[5], false,  callback);},
-            function (callback) {Person_TrainingCreate(person[0], training[6], false,  callback);},
+            function (callback) {Person_TrainingCreate(person[1], training[0], false,  callback);},
+            function (callback) {Person_TrainingCreate(person[1], training[1], false,  callback);},
+            function (callback) {Person_TrainingCreate(person[2], training[0], false,  callback);},
+            function (callback) {Person_TrainingCreate(person[2], training[1], false,  callback);},
+            function (callback) {Person_TrainingCreate(person[2], training[2], false,  callback);},
+            function (callback) {Person_TrainingCreate(person[3], training[0], false,  callback);},
+            function (callback) {Person_TrainingCreate(person[3], training[1], false,  callback);},
+            function (callback) {Person_TrainingCreate(person[3], training[2], false,  callback);},
+            function (callback) {Person_TrainingCreate(person[3], training[3], false,  callback);},
             ],cb);}
         function TaskLoad(cb) {async.series ([
             function (callback) {TaskCreate("Task1", "Task 1 for job 1", "1/1/2022", "1/1/2022", job[0], [role[0], role[1], role[2], role[3]],  callback);},
@@ -241,7 +246,7 @@ function LeaveCreate(name, startDate, endDate, person, cb) {
             function (callback) {LeaveCreate("leave6", "1/6/2022", "1/12/2022", person[5],  callback);},
             function (callback) {LeaveCreate("leave7", "1/7/2022", "1/13/2022", person[6],  callback);},
             ],cb);}
-            
+                
         
 function main () {
 

@@ -314,7 +314,7 @@ exports.person_leave_modify_post = [
     // validate and sanitize fields.
     body('name', 'Leave name must not be empty.').trim().isLength({min: 1}).escape(),
     body('startDate', 'Start Date must be a valid.').isISO8601(),
-    body('endDate', 'End Date must be a valid date.').optional({ checkFalsy: true, nullable: true }).isISO8601().toDate()
+    body('endDate', 'End Date must be a valid date.').optional({ checkFalsy: true, nullable: true }).isISO8601()
     .custom((value, { req }) => {
         if (value && value < req.body.startDate) {
             throw new Error('End Date must be greater than or equal to Start Date.');
@@ -342,7 +342,7 @@ exports.person_leave_modify_post = [
                     endDate: req.body.endDate,
                     duration: req.body.duration,
                     person: leave.person,
-                    _id: req.params.id
+                    _id: req.params.leaveid
                 });
         
             if (!errors.isEmpty()) {
@@ -353,7 +353,7 @@ exports.person_leave_modify_post = [
                     errors: errors.array() });
             } else {
                 // data is valid. update the record
-                Leave.findByIdAndUpdate(req.params.id, newLeave, {}, function (err) {
+                Leave.findByIdAndUpdate(req.params.leaveid, newLeave, {}, function (err) {
                     if (err) { return next(err); }
 
                     // redirect to the person's orignal organization

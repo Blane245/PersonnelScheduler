@@ -8,6 +8,7 @@ block content
     a(href='/jobs/'+job.organization)
         button.btn.btn-primary(type='button') Return to Job List
     if task_list.length != 0
+        - task_list.sort(function(a, b) {let textA = a.startDate_formatted; let textB = b.startDate_formatted; return (textA > textB) ? -1 : (textA < textB) ? 1 : 0;});
         table(class='table' id='job-table')
             thread 
                 tr 

@@ -12,5 +12,9 @@ block content
 
     button.btn.btn-primary(type='submit') Delete
     p
-    a(href='/jobs/'+job.organization.id)
-      button.btn.btn-danger(type='submit') Cancel
+    a(href='/jobs/'+job.organization)
+      button.btn.btn-danger(type='button') Cancel
+  if errors 
+      ul  
+          for error in errors 
+              li!= error.msg

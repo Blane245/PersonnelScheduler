@@ -17,7 +17,6 @@ block content
                     input#startDate.form-control(
                         name='startDate'
                         type='date' 
-                        font-size='3rem'
                         required='true' 
                         value=(undefined===leave ? '' : leave.startDate_formatted))        
                 div(class='col-sm-4')
@@ -25,7 +24,6 @@ block content
                     input#endDate.form-control(
                         name='endDate'
                         type='date' 
-                        font-size='3rem'
                         required='false' 
                         value=(undefined===leave ? '' : leave.endDate_formatted))        
         button.btn.btn-primary(type='submit') Submit

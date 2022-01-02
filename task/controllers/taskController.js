@@ -267,7 +267,7 @@ exports.task_assign_get =  function (req, res, next) {
                                 var personId = orgPersons[iperson].id;
                                 
                                 // TODO check other tasks to see if the person is assigned to another task
-                                var available = isAvailable(task.startDate, task.endDate, orgPersons[iperson].id, leaves);
+                                var available = isAvailable(task.startDate_formatted, task.endDate_formatted, orgPersons[iperson].id, leaves);
                                 var qualified = isQualified(task.endDate, roleTrainings, person_trainings, orgPersons[iperson].id);
 
                                 // see if the person is currently selected
@@ -310,9 +310,13 @@ function isAvailable (startDate, endDate, person, leaves) {
     var available = true;
     for (let i = 0; i < leaves.length; i++) {
         if (leaves[i].person == person) {
-            if (leaves[i].startDate <= endDate && leaves[i].endDate && leaves[i].endDate > startDate)
-            available = false;
-            if (leaves[i].startDate <= endDate && !leaves[i].endDate)
+            // console.log('leave start: ', leaves[i].startDate_formatted);
+            // console.log('leave end: ', leaves[i].endDate_formatted);
+            // console.log('task start: ', startDate);
+            // console.log('leave start: ', endDate);
+            if (leaves[i].startDate_formatted <= endDate && leaves[i].endDate && leaves[i].endDate_formatted > startDate)
+                available = false;
+            if (leaves[i].startDate_formatted <= endDate && !leaves[i].endDate)
                 available = false;
             if (!available) break;
 
@@ -328,13 +332,15 @@ function isAvailable (startDate, endDate, person, leaves) {
 function isQualified (endDate, role_trainings, person_trainings, person) {
     var qualified = false;
     var nQuals = 0;
-
+    // console.log(person.toString());
     // now check the person's training records against those required
     for (let irt = 0; irt < role_trainings.length; irt++) {
+        // console.log(role_trainings[irt].toString());
         for (let ipt = 0; ipt < person_trainings.length; ipt++) {
-
+            // console.log(person_trainings[ipt].training.toString());
+            // console.log(person_trainings[ipt].person.toString());
             // skip if this training is not for the person being processed
-            if (role_trainings[irt] == person_trainings[ipt].training && person == person_trainings[ipt].person) {
+            if ( role_trainings[irt].toString() == person_trainings[ipt].training.toString() && person.toString() == person_trainings[ipt].person.toString()) {
                 if (person_trainings[ipt].expirationDate && person_trainings[ipt].expirationDate <= endDate) 
                     {}
                 else

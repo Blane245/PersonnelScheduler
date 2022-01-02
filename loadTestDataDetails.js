@@ -66,12 +66,15 @@ function JobLoad(cb) {async.series ([
     ],cb);}
 function Person_TrainingLoad(cb) {async.series ([
     function (callback) {Person_TrainingCreate(person[0], training[0], false,  callback);},
-    function (callback) {Person_TrainingCreate(person[0], training[1], false,  callback);},
-    function (callback) {Person_TrainingCreate(person[0], training[2], false,  callback);},
-    function (callback) {Person_TrainingCreate(person[0], training[3], false,  callback);},
-    function (callback) {Person_TrainingCreate(person[0], training[4], false,  callback);},
-    function (callback) {Person_TrainingCreate(person[0], training[5], false,  callback);},
-    function (callback) {Person_TrainingCreate(person[0], training[6], false,  callback);},
+    function (callback) {Person_TrainingCreate(person[1], training[0], false,  callback);},
+    function (callback) {Person_TrainingCreate(person[1], training[1], false,  callback);},
+    function (callback) {Person_TrainingCreate(person[2], training[0], false,  callback);},
+    function (callback) {Person_TrainingCreate(person[2], training[1], false,  callback);},
+    function (callback) {Person_TrainingCreate(person[2], training[2], false,  callback);},
+    function (callback) {Person_TrainingCreate(person[3], training[0], false,  callback);},
+    function (callback) {Person_TrainingCreate(person[3], training[1], false,  callback);},
+    function (callback) {Person_TrainingCreate(person[3], training[2], false,  callback);},
+    function (callback) {Person_TrainingCreate(person[3], training[3], false,  callback);},
     ],cb);}
 function TaskLoad(cb) {async.series ([
     function (callback) {TaskCreate("Task1", "Task 1 for job 1", "1/1/2022", "1/1/2022", job[0], [role[0], role[1], role[2], role[3]],  callback);},

@@ -8,7 +8,7 @@ block content
                 div(class='col-sm-6')
                     label(for='training') Select Training: 
                     select#type.form-control(type='select', placeholder='Select training type' name='training' required='true')
-                        - trainings.sort(function(a, b) {let textA = a.name.toUpperCase(); let textB = b.name.toUpperCase(); return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;});
+                        - trainings.sort(function(a, b) {let textA = a.expirationDate_formatted; let textB = b.expirationDate_formatted; return (textA > textB) ? -1 : (textA < textB) ? 1 : 0;});
                         for training in trainings
                             if (modify)
                                 if (training._id.toString() === person_training.training._id.toString())
