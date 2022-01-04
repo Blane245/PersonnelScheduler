@@ -19,3 +19,35 @@ block content
       li #[strong Tasks:] !{results.tasks_count}
       li #[strong Leaves:] !{results.leave_count}
       li #[strong Training:] !{results.training_count}
+  button.btn.btn-primary(type='button' data-toggle='modal' data-target='#exampleModal') Click here to trigger the modal! 
+  div(class='modal fade' id='exampleModal' tabindex='-1' role='dialog' aria-labeledby='exampleModal' aria-hidden='true')
+    div.modal-dialog(role='document')
+      div.modal-content(role='document')
+        div.modal-header 
+          h5.modal-title My First Modal 
+          button.close(type='button' data-dismiss='modal' aria-label='Close')
+            span(aria-hidden='true') &times;
+        div.modal-body
+          h1 Hello, I am a modal!
+        div.modal-footer 
+          button.btn.btn-primary(type='button' data-dismiss='modal') OK
+          button.btn.btn-secondary(type='button' data-dismiss='modal') Close
+  //- script(type='text/javascript').
+  //-   const modal = document.querySelector(".modal");
+  //-   const trigger = document.querySelector(".trigger");
+  //-   const closeButton = document.querySelector(".close-button");
+
+  //-   function toggleModal() {
+  //-     modal.classList.toggle("show-modal");
+  //-   }
+
+  //-   function windowOnClick (event) {
+  //-     if (event.target === modal) {
+  //-       toggleModal();
+  //-     }
+  //-   }
+
+  //-   trigger.addEventListener("click", toggleModal);
+  //-   closeButton.addEventListener("click", toggleModal);
+  //-   window.addEventListener("click", windowOnClick);
+

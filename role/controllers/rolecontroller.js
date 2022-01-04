@@ -1,5 +1,6 @@
 var Organization = require('../../models/organization');
 var Role = require('../../models/role');
+var Job = require('../../models/job');
 const Training = require('../../models/training');
 const { check, validationResult } = require('express-validator');
 var async = require('async');
@@ -7,27 +8,54 @@ const { training_list } = require('../../training/controllers/trainingController
 
 // the list of roles for an organization
 exports.organization_role_list = function (req, res, next) {
-    async.parallel ({
-        // get the organization object for this group of roles
-        organization: function (callback) {
-            Organization.findById(req.params.orgId).exec(callback);},
-        // get the roles for this organization
-        roles: function (callback) {
-            Role.find({ 'organization': req.params.orgId })
-            .populate('organization')
-            .exec(callback);
-        },
-    }, function (err, results) {
-        if (err) { return next(err); }
-        res.render(
-            '../role/views/role_list', 
-            { title: "Role List for Organization '"+ results.organization.name + "'",
-             organization: results.organization,
-             role_list: results.roles });
 
+    // get the organization
+    Organization.findById(req.params.orgId).exec(function (err, org) {
+        async.parallel ({
+
+            // get all of the roles for this organization
+            roles: function(callback) {
+                Role.find({'organization': req.params.orgId}, callback);
+            },
+
+            // get all of the jobs
+            jobs: function(callback) {
+                Job.find({}, callback);
+            },
+
+        }, function (err, results) {
+            if (err) { return next(err); }
+
+            // build  up the counts of the times this role appears in a job record
+            var roleData = []
+            for (let i = 0 ; i < results.roles.length; i++) {
+                roleData.push ({
+                    name: results.roles[i].name,
+                    description: results.roles[i].description,
+                    id: results.roles[i].id,
+                    nJobs: 0
+                });
+                for (let j = 0; j < results.jobs.length; j++) {
+                    
+                    // check through the roles array on this job for this role
+                    for (let k = 0; k < results.jobs[j].role.length; k++) {
+                        if (results.jobs[j].role[k].toString() == results.roles[i].id.toString()) {
+                            roleData[i].nJobs++;
+                            break;
+                        }
+                    }
+                }
+            }
+            res.render(
+                '../role/views/role_list', 
+                { title: "Role List for Organization '"+ org.name + "'",
+                organization: org,
+                role_list: roleData });
+
+        });
     });
 
-};
+}
 
 // Display role create form on GET.
 exports.role_create_get = function(req, res, next) {
@@ -158,43 +186,16 @@ exports.role_modify_post = [
     }
 ]
 
-// Display role delete form on GET.
-// TODO prevent deletion when role has related jobs or tasks
+// Handle role delete on GET.
 exports.role_delete_get = function(req, res, next) {
-
-    async.parallel({
-        role: function(callback) {
-            Role.findById(req.params.id).populate('organization').exec(callback)
-        },
-    }, function(err, results) {
+    Role.findById(req.params.id).exec(function (err, role) {
         if (err) { return next(err); }
-        // Successful, so render.
-        res.render('role_delete', { 
-            title: "Delete role '" + results.role.name + "'" + " from organization '" + results.role.organization.name + "'",
-            role: results.role,
-            org: req.body.org } );
+        Role.findByIdAndRemove(req.params.id, function (err) {
+            if (err) { return next(err); }
+            res.redirect ('/roles/'+role.organization);
+        });
     });
-
-};
-
-// Handle role delete on POST.
-exports.role_delete_post = function(req, res, next) {
-
-    async.parallel({
-        role: function(callback) {
-          Role.findById(req.params.id).exec(callback)
-        },
-    }, function(err, results) {
-        if (err) { return next(err); }
-            // role has no children. Delete object and redirect to the list of roles for its organization.
-            Role.findByIdAndRemove(results.role.id, function deleterole(err) {
-                if (err) { return next(err); }
-                // Success - go to organization list
-                res.redirect ('/roles/'+results.role.organization);
-            })
-        // }
-    });
-};
+}
 
 // the list of training requirments for role
 exports.role_training_list = function (req, res, next) {
@@ -328,28 +329,8 @@ exports.role_training_modify_post = function (req, res, next) {
     });
 }
 
+// Handle role delete on GET.
 exports.role_training_delete_get = function(req, res, next) {
-
-    async.parallel({
-        role: function(callback) {
-            Role.findById(req.params.id).exec(callback)
-        },
-        training: function(callback) {
-            Training.findById(req.params.trainingid).exec(callback)
-        },
-    }, function(err, results) {
-        if (err) { return next(err); }
-        // Successful, so render.
-        res.render('role_training_delete', { 
-            title: "Delete training '" + results.training.name + "' from role '" + results.role.name +"'", 
-            role: results.role,
-            training: results.training } );
-    });
-
-};
-
-// Handle role delete on POST.
-exports.role_training_delete_post = function(req, res, next) {
 
     async.parallel({
         role: function(callback) {

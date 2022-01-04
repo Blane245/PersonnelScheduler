@@ -41,7 +41,7 @@ exports.task_list_get = function (req, res, next) {
             { title: "Task List for Job '"+ results.job.name + "'",
              job: results.job, 
              org: results.job.org,
-             task_list: results.tasks });
+             tasks: results.tasks });
 
     });
 
@@ -408,26 +408,9 @@ exports.task_assign_post =  function (req, res, next) {
     });
 
 }
-// Display training delete form on GET.
-exports.task_delete_get = function(req, res, next) {
-
-    async.parallel({
-        task: function(callback) {
-            Task.findById(req.params.taskid).exec(callback)},
-        job: function(callback) {
-                Job.findById(req.params.id).exec(callback)}
-    }, function(err, results) {
-        if (err) { return next(err); }
-        res.render('task_delete', { 
-            title: "Delete task '" + results.task.name + "' from job '" + results.job.name + "'" ,
-            job: results.job,
-            task: results.task} );
-    });
-
-};
 
 // Handle task delete on POST.
-exports.task_delete_post = function(req, res, next) {
+exports.task_delete_get = function(req, res, next) {
 
     async.parallel({
         task: function(callback) {

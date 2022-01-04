@@ -20,8 +20,4 @@ router.post('/organization/:id/modify', organization_controller.organization_mod
 /* GET request for deleting an organization */
 router.get('/organization/:id/delete', organization_controller.organization_delete_get);
 
-/* Post request for deleting an organization */
-router.post('/organization/:id/delete', organization_controller.organization_delete_post);
-
-
 module.exports = router;

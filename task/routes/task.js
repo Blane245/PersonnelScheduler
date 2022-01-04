@@ -26,7 +26,4 @@ router.post('/job/:id/task/:taskid/assign', task_controller.task_assign_post);
 /* GET request for deleting a job's task */
 router.get('/job/:id/task/:taskid/delete', task_controller.task_delete_get);
 
-/* POST request for deleting a job's task */
-router.post('/job/:id/task/:taskid/delete', task_controller.task_delete_post);
-
 module.exports = router;

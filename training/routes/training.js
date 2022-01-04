@@ -20,8 +20,5 @@ router.post('/training/:id/modify', training_controller.training_modify_post);
 /* GET request for deleting an training */
 router.get('/training/:id/delete', training_controller.training_delete_get);
 
-/* Post request for deleting an training */
-router.post('/training/:id/delete', training_controller.training_delete_post);
-
 
 module.exports = router;

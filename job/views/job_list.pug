@@ -34,8 +34,32 @@ block content
                             a(href='/jobs/job/'+job.id+'/modify')
                                 button.btn.btn-small.btn-primary(type='button')
                         td(class='text-center')
-                            a(href='/jobs/job/'+job.id+'/delete')
-                                button.btn.btn-small.btn-danger(type='button')
+                            button.btn.btn-small.btn-danger(data-toggle='modal' data-target='#delete-'+job.id)
     else
         ul
             li There are no jobs for organization #{organization.name}
+    //- build the delete modal dialogs
+    for job in job_list
+        div(class='modal fade' id='delete-'+job.id aria-labelby='delete-'+job.id tabindex='-1' role='dialog' aria-hidden='true')
+            div.modal-dialog(role='document')
+                div.modal-content(role='document')
+                    div.modal-header
+                        -var title = 'Delete Job "' + job.name + '" of Organization "' + organization.name + '"'
+                        h2.modal-title #{title} 
+                        button.close(type='button' data-dismiss='modal' aria-label='Close')
+                            span(aria-hidden='true') &times;
+                    div.modal-body
+                        -var desc = 'Description: ' + job.description
+                        p #{desc}
+                        if (job.nTasks != 0)
+                            ul
+                                -var taskCount = 'Number of Tasks: ' + job.nTasks
+                                li #{taskCount}
+                            p Job cannot be deleted until all tasks that use it have been deleted
+                        else
+                            p Do you really want to delete this job?
+                    div.modal-footer
+                        if (job.nTasks == 0)
+                            a(href='/jobs/job/'+job.id+'/delete')
+                                button.btn.btn-primary(type='button') OK
+                        button.btn.btn-danger(type='button' data-dismiss='modal') Cancel

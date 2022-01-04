@@ -2,12 +2,13 @@ extends ../../views/layout
 
 block content
     h1= title
-    - var addurl = '/roles/' +organization.id+ '/create/'
-    a(href=addurl)
-        button.btn.btn-large.btn-primary(type='button') Add New Role 
-    p
-    a(href='/organizations')
-        button.btn.btn-primary(type='button') Return to Organization List
+    div(class='row')
+        div(class='col-sm-2')
+            a(href='/roles/' +organization.id+ '/create/')
+                button.btn.btn-large.btn-primary(type='button') Add New Role 
+        div(class='col-sm-2')
+            a(href='/organizations')
+                button.btn.btn-primary(type='button') Return to Organization List
     p
     if role_list.length != 0
         table(class='table' id='role-table')
@@ -30,8 +31,33 @@ block content
                             a(href='/roles/role/'+role.id+'/modify')
                                 button.btn.btn-small.btn-primary(type='button')
                         td(class='text-center')
-                            a(href='/roles/role/'+role.id+'/delete')
-                                button.btn.btn-small.btn-danger(type='button')
+                            button.btn.btn-small.btn-danger(data-toggle='modal' data-target='#delete-'+role.id)
+
     else
         ul
             li There are no roles for organization #{organization.name}
+    //- build the delete modal dialogs
+    for role in role_list
+        div(class='modal fade' id='delete-'+role.id aria-labelby='delete-'+role.id tabindex='-1' role='dialog' aria-hidden='true')
+            div.modal-dialog(role='document')
+                div.modal-content(role='document')
+                    div.modal-header
+                        -var title = 'Delete Role "' + role.name + '" of Organization "' + organization.name + '"'
+                        h2.modal-title #{title} 
+                        button.close(type='button' data-dismiss='modal' aria-label='Close')
+                            span(aria-hidden='true') &times;
+                    div.modal-body
+                        -var desc = 'Description: ' + role.description
+                        p #{desc}
+                        if (role.nJobs != 0)
+                            ul
+                                -var jobCount = 'Number of Jobs: ' + role.nJobs
+                                li #{jobCount}
+                            p Role cannot be deleted until all jobs that use it have been deleted
+                        else
+                            p Do you really want to delete this role?
+                    div.modal-footer
+                        if (role.nJobs == 0)
+                            a(href='/role/'+role.id+'/delete')
+                                button.btn.btn-primary(type='button') OK
+                        button.btn.btn-danger(type='button' data-dismiss='modal') Cancel

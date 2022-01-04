@@ -17,7 +17,7 @@ exports.job_roles_get = function(req, res, next) {
             { title: "Role List for Job '"+ results.job.name + "'",
              orgId: results.job.organization.id,
              job: results.job, 
-             rolelist: results.job.role });
+             roles: results.job.role });
 
     });
 };
@@ -99,30 +99,8 @@ exports.job_role_add_post = [
     }
 ]
 
-// Display role delete from job form on GET.
+// process the role delete from job GET
 exports.job_role_delete_get = function(req, res, next) {
-    async.parallel(
-        {
-            job: function(callback) {
-                Job.findById(req.params.id).exec(callback);
-            },
-            role: function(callback) {
-                Role.findById(req.params.roleid).exec(callback);
-            },
-        }, 
-        function(err, results) {
-            if (err) { return next(err); }
-            res.render ('../job/views/job_role_delete', {
-                title: "Remove role '"+results.role.name+"' from job '" +results.job.name+"'",
-                job: results.job,
-                role: results.role }
-                );
-        }
-    );        
-}
-
-// process the role delete from job POST
-exports.job_role_delete_post = function(req, res, next) {
     Job.findById(req.params.id).exec(function (err, job) {
 
         // build a new job record from the current on

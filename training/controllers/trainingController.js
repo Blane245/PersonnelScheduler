@@ -1,4 +1,5 @@
 var Training = require('../../models/training');
+var Person_Training = require('../../models/person_training');
 const { check, validationResult } = require('express-validator');
 var async = require('async');
 const training = require('../../models/training');
@@ -10,7 +11,7 @@ exports.training_list = function (req, res, next) {
             if (err) { return next(err); }
             res.render(
                 '../views/training_list', 
-                { title: 'Training List', training_list: trainings });
+                { title: 'Training List', trainings: trainings });
         });
 };
 
@@ -123,43 +124,26 @@ exports.training_modify_post = [
     }
 ]
 
-// Display training delete form on GET.
+
+// Handle training delete on GET.
 exports.training_delete_get = function(req, res, next) {
 
     async.parallel({
         training: function(callback) {
-            Training.findById(req.params.id).exec(callback)
-        },
-        // trainings_books: function(callback) {
-        //   Book.find({ 'training': req.params.id }).exec(callback)
-        // },
+          Training.findById(req.params.id).exec(callback)},
+        person_trainings: function(callback) {
+          Person_Training.find({'training': req.params.id}).exec(callback)}
     }, function(err, results) {
         if (err) { return next(err); }
-        if (results.training==null) { // No results.
-            res.redirect('/catalog/trainings');
+        for (let i = 0; i < results.person_trainings.length; i++ ){
+            Person_Training.findByIdAndRemove(results.person_trainings[i].id, function (err) {
+                if (err) { return next (err); }
+            });
         }
-        // Successful, so render.
-        res.render('training_delete', { 
-            title: "'Delete training '" + results.training.name + "'",
-            training: results.training } );
-    });
-
-};
-
-// Handle training delete on POST.
-exports.training_delete_post = function(req, res, next) {
-
-    async.parallel({
-        training: function(callback) {
-          Training.findById(req.body.trainingid).exec(callback)
-        },
-    }, function(err, results) {
-        if (err) { return next(err); }
-            Training.findByIdAndRemove(req.body.trainingid, function deletetraining(err) {
-                if (err) { return next(err); }
-                res.redirect('/trainings')
-            })
-        // }
+        Training.findByIdAndRemove(req.params.id, function (err) {
+            if (err) { return next(err); }
+            res.redirect('/trainings')
+        })
     });
 };
 

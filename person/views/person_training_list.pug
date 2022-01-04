@@ -28,8 +28,24 @@ block content
                             a(href='/persons/person/'+person.id+'/person_training/'+person_training.id+'/modify')
                                 button.btn.btn-small.btn-primary(type='button')
                         td(class='text-center')
-                            a(href='/persons/person/'+person.id+'/person_training/'+person_training.id+'/delete')
-                                button.btn.btn-small.btn-danger(type='button')
+                            button.btn.btn-small.btn-danger(data-toggle='modal' data-target='#delete-'+person_training.id)
     else
         ul
             li There are no training records for #{person.fullName}
+    for person_training in person_trainings
+        div(class='modal fade' id='delete-'+person_training.id aria-labelby='delete-'+person_training.id tabindex='-1' role='dialog' aria-hidden='true')
+            div.modal-dialog(role='document')
+                div.modal-content(role='document')
+                    div.modal-header
+                        -var title = 'Delete Training record "' + person_training.training.name + '" of Person "' + person.fullName + '"'
+                        h2.modal-title #{title} 
+                        button.close(type='button' data-dismiss='modal' aria-label='Close')
+                            span(aria-hidden='true') &times;
+                    div.modal-body
+                        -var exp = "Expiration Date: " + person_training.expirationDate_formatted 
+                        p #{exp}
+                        p Do you really want to delete this training record?
+                    div.modal-footer
+                        a(href='/persons/person/'+person.id+'/person_training/'+person_training.id+'/delete')
+                            button.btn.btn-primary(type='button') OK
+                        button.btn.btn-danger(type='button' data-dismiss='modal') Cancel

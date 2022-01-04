@@ -23,9 +23,6 @@ router.post('/job/:id/modify', job_controller.job_modify_post);
 /* GET request for deleting a job */
 router.get('/job/:id/delete', job_controller.job_delete_get);
 
-/* Post request for deleting a job */
-router.post('/job/:id/delete', job_controller.job_delete_post);
-
 /* GET request for editing roles for a job */
 router.get('/job/:id/roles', job_role_controller.job_roles_get);
 
@@ -37,9 +34,6 @@ router.post('/job/:id/role/add', job_role_controller.job_role_add_post);
 
 /* GET request for deleting a role from a job */
 router.get('/job/:id/role/:roleid/delete', job_role_controller.job_role_delete_get);
-
-/* Post request for deleting a role from a job */
-router.post('/job/:id/role/:roleid/delete', job_role_controller.job_role_delete_post);
 
 /* GET request for editing tasks for a job */
 router.get('/job/:id/tasks', task_controller.task_list_get);

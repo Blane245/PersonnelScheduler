@@ -9,7 +9,7 @@ block content
     a(href='/jobs/'+job.organization)
         button.btn.btn-large.btn-primary Return to Job List
     p
-    if rolelist.length != 0
+    if roles.length != 0
         table(class='table' id='job-table')
             thread 
                 tr 
@@ -18,13 +18,30 @@ block content
                     th(class='text-center' scope='col') Remove
             tbody 
 
-                each role in rolelist
+                each role in roles
                     tr 
                         td(class='text-left') #{role.name}
                         td(class='text-left') #{role.description}
                         td(class='text-center')
-                            a(href='/jobs/job/'+job.id+'/role/'+role.id+'/delete' style="color:red")
-                                button(type='button' class='btn btn-small btn-danger') 
+                            button.btn.btn-small.btn-danger(data-toggle='modal' data-target='#delete-'+role.id)
     else
         ul
             li There are no roles for job #{job.name}
+    //- build the delete modal dialogs 
+    for role in roles
+        div(class='modal fade' id='delete-'+role.id aria-labelby='delete-'+role.id tabindex='-1' role='dialog' aria-hidden='true')
+            div.modal-dialog(role='document')
+                div.modal-content(role='document')
+                    div.modal-header
+                        -var title = 'Remove Role Requirement "' + role.name + '" of Job "' + job.name + '"'
+                        h2.modal-title #{title} 
+                        button.close(type='button' data-dismiss='modal' aria-label='Close')
+                            span(aria-hidden='true') &times;
+                    div.modal-body
+                        -var desc = 'Description: ' + role.description
+                        p #{desc}
+                        p Do you really want to delete this role requirement?
+                    div.modal-footer
+                        a(href='/jobs/job/'+job.id+'/role/'+role.id+'/delete')
+                            button.btn.btn-primary(type='button') OK
+                        button.btn.btn-danger(type='button' data-dismiss='modal') Cancel

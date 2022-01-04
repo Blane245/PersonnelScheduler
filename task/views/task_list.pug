@@ -7,8 +7,8 @@ block content
     p
     a(href='/jobs/'+job.organization)
         button.btn.btn-primary(type='button') Return to Job List
-    if task_list.length != 0
-        - task_list.sort(function(a, b) {let textA = a.startDate_formatted; let textB = b.startDate_formatted; return (textA > textB) ? -1 : (textA < textB) ? 1 : 0;});
+    if tasks.length != 0
+        - tasks.sort(function(a, b) {let textA = a.startDate_formatted; let textB = b.startDate_formatted; return (textA > textB) ? -1 : (textA < textB) ? 1 : 0;});
         table(class='table' id='job-table')
             thread 
                 tr 
@@ -21,7 +21,7 @@ block content
                 th(class='text-center' scope='col') Delete
             tbody 
 
-                each task in task_list
+                each task in tasks
                     tr 
                         td(class='text-left') #{task.name}
                         td(class='text-left') #{task.description}
@@ -34,8 +34,25 @@ block content
                             a(href='/tasks/job/' +job.id+'/task/'+task.id+'/modify')
                                 button.btn.btn-small.btn-primary(type='button')
                         td(class='text-center')
-                            a(href='/tasks/job/' +job.id+'/task/'+task.id+'/delete')
-                                button.btn.btn-small.btn-danger(type='button')
+                            button.btn.btn-small.btn-danger(data-toggle='modal' data-target='#delete-'+task.id)
     else
         ul
             li There are no tasks for job #{job.name}
+    //- build the delete modal dialogs 
+    for task in tasks
+        div(class='modal fade' id='delete-'+task.id aria-labelby='delete-'+task.id tabindex='-1' role='dialog' aria-hidden='true')
+            div.modal-dialog(role='document')
+                div.modal-content(role='document')
+                    div.modal-header
+                        -var title = 'Delete Task "' + task.name + '" of Job "' + job.name + '"'
+                        h2.modal-title #{title} 
+                        button.close(type='button' data-dismiss='modal' aria-label='Close')
+                            span(aria-hidden='true') &times;
+                    div.modal-body
+                        -var desc = 'Description: ' + task.description
+                        p #{desc}
+                        p Do you really want to delete this task?
+                    div.modal-footer
+                        a(href='/tasks/job/'+job.id+'/task/'+task.id+'/delete')
+                            button.btn.btn-primary(type='button') OK
+                        button.btn.btn-danger(type='button' data-dismiss='modal') Cancel

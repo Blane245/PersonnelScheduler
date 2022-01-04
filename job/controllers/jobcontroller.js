@@ -17,13 +17,32 @@ exports.organization_job_list = function (req, res, next) {
             .populate('organization')
             .exec(callback);
         },
+        tasks: function (callback) {
+            Task.find({}).exec(callback);
+        }
     }, function (err, results) {
         if (err) { return next(err); }
+
+        // build the job_list, include the count of the number of tasks in each job
+        jobData = [];
+        for (let i = 0; i < results.jobs.length; i++) {
+            jobData.push ({
+                name: results.jobs[i].name,
+                description: results.jobs[i].description,
+                id: results.jobs[i].id,
+                nTasks: 0
+            });
+            for (let j = 0; j < results.tasks.length; j++) {
+                if (results.jobs[i].id.toString() == results.tasks[j].job.toString()) {
+                    jobData[i].nTasks++;
+                }
+            }
+        }
         res.render(
             '../job/views/job_list', 
             { title: "Job List for Organization '"+ results.organization.name + "'",
              organization: results.organization, 
-             job_list: results.jobs });
+             job_list: jobData });
 
     });
 
@@ -154,30 +173,9 @@ exports.job_modify_post = [
     }
 ]
 
-// Display job delete form on GET.
-// TODO prevent deletion when job has related tasks
+
+// Handle job delete on GET.
 exports.job_delete_get = function(req, res, next) {
-
-    async.parallel({
-        job: function(callback) {
-            Job.findById(req.params.id).populate('organization').exec(callback)
-        },
-    }, function(err, results) {
-        if (err) { return next(err); }
-        if (results.job==null) { // No results.
-            res.redirect('/organizations');
-        }
-        req.body.org = results.job.organization;
-        // Successful, so render.
-        res.render('job_delete', { 
-            title: "Delete job '" + results.job.name + "' from organization '" + results.job.organization.name + "'",
-            job: results.job } );
-    });
-
-};
-
-// Handle job delete on POST.
-exports.job_delete_post = function(req, res, next) {
 
     async.parallel({
         job: function(callback) {
@@ -187,25 +185,11 @@ exports.job_delete_post = function(req, res, next) {
     }, function(err, results) {
         if (err) { return next(err); }
 
-        var errors = validationResult(req).array();
-        if (results.task_count != 0) {
-            errors.push({msg: results.task_count + ' Tasks must be deleted before the job can be deleted.'});
-        }
-
-        // redisplay the delete post page with errors
-        if (errors.length !=0) {
-            res.render('job_delete', { 
-                title: "Delete job '"+results.job.name+"'",
-                job: results.job,
-                errors:errors } );
-        } else {
-            // job has no children. Delete object and redirect to the list of jobs for its organization.
-            Job.findByIdAndRemove(results.job.id, function deletejob(err) {
-                if (err) { return next(err); }
-                // Success - go to organization list
-                res.redirect ('/jobs/'+results.job.organization);
-            });
-        }
+        Job.findByIdAndRemove(results.job.id, function deletejob(err) {
+            if (err) { return next(err); }
+            // Success - go to organization list
+            res.redirect ('/jobs/'+results.job.organization);
+        });
     });
 };
 

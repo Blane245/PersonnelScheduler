@@ -21,9 +21,6 @@ router.post('/role/:id/modify', role_controller.role_modify_post);
 /* GET request for deleting a role */
 router.get('/role/:id/delete', role_controller.role_delete_get);
 
-/* Post request for deleting a role */
-router.post('/role/:id/delete', role_controller.role_delete_post);
-
 /* GET request for list of roles in an organization */
 router.get('/role/:id/training', role_controller.role_training_list);
 
@@ -33,16 +30,13 @@ router.get('/role/:id/training/create', role_controller.role_training_create_get
 /* Post request for creating a role for an organization */
 router.post('/role/:id/training/create', role_controller.role_training_create_post);
 
-/* GET request for modifying a role */
+/* GET request for modifying a role training*/
 router.get('/role/:id/training/:trainingid/modify', role_controller.role_training_modify_get);
 
-/* Post request for modifying a role*/
+/* Post request for modifying a role training*/
 router.post('/role/:id/training/:trainingid/modify', role_controller.role_training_modify_post);
 
-/* GET request for deleting a role */
+/* GET request for deleting a role training */
 router.get('/role/:id/training/:trainingid/delete', role_controller.role_training_delete_get);
-
-/* Post request for deleting a role */
-router.post('/role/:id/training/:trainingid/delete', role_controller.role_training_delete_post);
 
 module.exports = router;

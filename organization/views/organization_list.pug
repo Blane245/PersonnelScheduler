@@ -2,12 +2,13 @@ extends ../../views/layout
 
 block content
   h1= title
-
-  a(href='organizations/create') 
-    button.btn.ltn-large.btn-primary(type='button') Add Organization
-  p
-  a(href='index') 
-    button.btn.btn-large.btn-primary(type='button') Return to menu 
+  div(class='row')
+    div(class='col-sm-2')
+      a(href='organizations/create') 
+        button.btn.ltn-large.btn-primary(type='button') Add Organization
+    div(class='col-sm-2')
+      a(href='index') 
+        button.btn.btn-large.btn-primary(type='button') Return to menu 
   p
   if orgs.count != 0
     table(class='table' id='org-table')
@@ -35,11 +36,44 @@ block content
               a(href='persons/'+org.id) 
                 button.btn.btn-small.btn-dark(type='button')
             td(class='text-center')
-              a(href='organizations/organization/'+org.id+'/modify' style="color:blue")
+              a(href='organizations/organization/'+org.id+'/modify')
                 button.btn.btn-small.btn-primary(type='button')
             td(class='text-center')
-              a(href='organizations/organization/'+org.id+'/delete' style="color:red")
-                button.btn.btn-small.btn-danger(type='button')
+                button.btn.btn-small.btn-danger(data-toggle='modal' data-target='#delete-'+org.id)
   else
     ul
       li There are no organizations
+  //- build the modify and delete modal dialogs (add chilrder protection)
+  for org in orgs
+    div(class='modal fade' id='delete-'+org.id aria-labelby='delete-'+org.id tabindex='-1' role='dialog' aria-hidden='true')
+      div.modal-dialog(role='document')
+        div.modal-content(role='document')
+          div.modal-header
+            -var title = 'Delete Organization "' + org.name + '"'
+            h2.modal-title #{title} 
+            button.close(type='button' data-dismiss='modal' aria-label='Close')
+              span(aria-hidden='true') &times;
+          div.modal-body
+            -var desc = 'Description: ' + org.description
+            p #{desc}
+            if (org.nRoles != 0 || org.nJobs != 0 || org.nPersons != 0)
+              ul
+                if (org.nJobs > 0)
+                  -var jobCount = 'Number of Jobs: ' + org.nJobs
+                  li #{jobCount}
+                if (org.nRoles > 0)
+                  -var roleCount = 'Number of Roles: ' + org.nRoles
+                  li #{roleCount}
+                if (org.nPersons > 0)
+                  -var personCount = 'Number of People: ' + org.nPersons
+                  li #{personCount}
+              p Organization cannot be deleted until jobs and roles have been deleted and people have been deleted or moved to another organization
+            else
+              p Do you really want to delete this organization?
+          div.modal-footer
+            if (org.nRoles == 0 && org.nJobs == 0 && org.nPersons == 0)
+              a(href='organizations/organization/'+org.id+'/delete')
+                button.btn.btn-primary(type='button') OK
+            button.btn.btn-danger(type='button' data-dismiss='modal') Cancel
+
+

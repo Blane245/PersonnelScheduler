@@ -20,9 +20,6 @@ router.post('/person/:id/modify', person_controller.person_modify_post);
 /* GET request for deleting a person */
 router.get('/person/:id/delete', person_controller.person_delete_get);
 
-/* Post request for deleting a person */
-router.post('/person/:id/delete', person_controller.person_delete_post);
-
 /* GET request for handling a person's leave */
 router.get('/person/:id/leave', person_controller.person_leave_list);
 
@@ -41,9 +38,6 @@ router.post('/person/:id/leave/:leaveid/modify', person_controller.person_leave_
 /* GET request for deleting person's leave */
 router.get('/person/:id/leave/:leaveid/delete', person_controller.person_leave_delete_get);
 
-/* POST request for deleting a person's leave */
-router.post('/person/:id/leave/:leaveid/delete', person_controller.person_leave_delete_post);
-
 /* GET request for handling a person's leave */
 router.get('/person/:id/person_training', person_controller.person_training_list);
 
@@ -61,8 +55,5 @@ router.post('/person/:id/person_training/:trainingid/modify', person_controller.
 
 /* GET request for deleting person's person_training */
 router.get('/person/:id/person_training/:trainingid/delete', person_controller.person_training_delete_get);
-
-/* POST request for deleting a person's person_training */
-router.post('/person/:id/person_training/:trainingid/delete', person_controller.person_training_delete_post);
 
 module.exports = router;

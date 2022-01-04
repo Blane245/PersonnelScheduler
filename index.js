@@ -1,6 +1,4 @@
-// TODO implement checks for children before allowing delete (job,role,person->task, training->role,person) 
 // TODO - implement move role up and down job list
-// TODO - popups for create, modify, and delete, except for personnel assignment to task
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -14,7 +12,7 @@ var trainingRouter = require('./training/routes/training.js');
 var personRouter = require('./person/routes/person.js');
 var taskRouter = require('./task/routes/task.js');
 var app = express();
-
+ 
 //pug view engine setup
 app.set('views', [
   path.join(__dirname, 'views'), 

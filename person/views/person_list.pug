@@ -35,8 +35,32 @@ block content
                             a(href='/persons/person/'+person.id+'/modify')
                                 button.btn.btn-small.btn-primary(type='button')
                         td(class='text-center')
-                            a(href='/persons/person/'+person.id+'/delete')
-                                button.btn.btn-small.btn-danger(type='button')
+                            button.btn.btn-small.btn-danger(data-toggle='modal' data-target='#delete-'+person.id)
     else
         ul
             li There are no persons for organization #{organization.name}
+    //- build the delete modal dialogs
+    for person in persons
+        div(class='modal fade' id='delete-'+person.id aria-labelby='delete-'+person.id tabindex='-1' role='dialog' aria-hidden='true')
+            div.modal-dialog(role='document')
+                div.modal-content(role='document')
+                    div.modal-header
+                        -var title = 'Delete Person "' + person.name + '" of Organization "' + organization.name + '"'
+                        h2.modal-title #{title} 
+                        button.close(type='button' data-dismiss='modal' aria-label='Close')
+                            span(aria-hidden='true') &times;
+                    div.modal-body
+                        -var desc = 'Email: ' + person.email
+                        p #{desc}
+                        if (person.nTasks != 0)
+                            ul
+                                -var taskCount = 'Number of Tasks: ' + person.nTasks
+                                li #{taskCount}
+                            p Person cannot be deleted until all tasks that use it have been deleted
+                        else
+                            p Do you really want to delete this role?
+                    div.modal-footer
+                        if (person.nTasks == 0)
+                            a(href='/persons/person/'+person.id+'/delete')
+                                button.btn.btn-primary(type='button') OK
+                        button.btn.btn-danger(type='button' data-dismiss='modal') Cancel

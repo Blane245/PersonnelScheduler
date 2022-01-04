@@ -1,6 +1,7 @@
 var Organization = require('../../models/organization');
 var Person = require('../../models/person');
 var Leave = require('../../models/leave');
+var Task = require('../../models/task');
 var Training = require('../../models/training');
 var Person_Training = require('../../models/person_training');
 const { body, validationResult } = require('express-validator');
@@ -16,18 +17,36 @@ exports.organization_person_list = function (req, res, next) {
             Person.find({ 'organization': req.params.orgid })
             .exec(callback);
         },
+        tasks: function (callback) {
+            Task.find({}).exec(callback);
+        }
     }, function (err, results) {
         if (err) { return next(err); }
         orgName = results.organization.name;
+        personData = [];
+        for (let i = 0; i < results.persons.length; i++) {
+            personData.push ({
+               fullName: results.persons[i].fullName,
+               email: results.persons[i].email,
+               id: results.persons[i].id,
+               nTasks: 0 
+            });
+            for (let j = 0; j < results.tasks.length; j++) {
+                for (let k = 0; k < results.tasks[j].persons.length; k++) {
+                    if (results.tasks[j].persons[k].toString() == results.persons[i].id.toString()) {
+                        personData[i].nTasks++;
+                        break;
+                    }
+                }
+            }
+        }
         res.render(
             '../person/views/person_list',{ 
                 title: "Person List for Organization '"+ orgName + "'",
                 organization: results.organization,
-                persons: results.persons 
-            });
-
+                persons: personData 
+        });
     });
-
 };
 
 // Display person create form on GET.
@@ -167,36 +186,38 @@ exports.person_modify_post = [
  
 ];
 
-// Display person delete form on GET.
+// Handle person delete on GET.
 exports.person_delete_get = function(req, res, next) {
 
-    Person.findById(req.params.id).populate('organization')
-    .exec(function(err, person) {
-        if (err) { return next(err); }
-        if (person==null) { // No results.
-            res.redirect('/organizations');
+
+    // get all of the peron's leave and training records so they can ge deleted as well
+    async.parallel({
+        person: function (callback) {
+            Person.findById(req.params.id).exec(callback);},
+        leaves: function (callback) {
+            Leave.find({'person': req.params.id}).exec(callback);},
+        person_trainings: function (callback) {
+            Person_Training.find({'person':req.params.id}).exec(callback);}
+
+    }, function(err, results) {
+        if(err) {return (next(err));}
+    
+        // Delete person and all assocated leave and person_training records. redirect to the list of persons for its organization.
+        for (let i = 0; i < results.leaves.length; i++) {
+            Leave.findByIdAndRemove(results.leaves[i].id, function (err) {
+                if (err) { return next(err);}
+            });
         }
-        // Successful, so render.
-        res.render('person_delete', { 
-            title: "Delete person '" + person.fullName + "' from organization '" + person.organization.name + "'",
-            person: person } );
-    });
-
-};
-
-// Handle person delete on POST.
-exports.person_delete_post = function(req, res, next) {
-
-    Person.findById(req.params.id)
-    .exec(function(err, person) {
-        if (err) { return next(err); }
-            // person has no children. Delete object and redirect to the list of persons for its organization.
-            Person.findByIdAndRemove(person.id, function deleteperson(err) {
-                if (err) { return next(err); }
-                // Success - go to organization list
-                res.redirect ('/persons/'+person.organization);
-            })
-        // }
+        for (let i = 0; i < results.person_trainings.length; i++) {
+            Person_Training.findByIdAndRemove(results.person_trainings[i], function (err) {
+                if (err) { return next(err);}
+            });
+        }
+        Person.findByIdAndRemove(req.params.id, function (err) {
+            if (err) { return next(err); }
+            // Success - go to organization list
+            res.redirect ('/persons/'+result.person.organization);
+        });
     });
 };
 
@@ -217,10 +238,9 @@ exports.person_leave_list = function(req, res, next) {
         },
     }, function (err, results) {
         if (err) { return next(err); }
-        personName = results.person.fullName;
         res.render(
             '../person/views/leave_list', 
-            { title: "Leave List for '"+ personName + "'",
+            { title: "Leave List for '"+ results.person.fullName + "'",
              person: results.person, 
              leaves: results.leaves });
 
@@ -371,22 +391,8 @@ exports.person_leave_delete_get = function(req, res, next) {
     Leave.findById(req.params.leaveid).populate('person')
     .exec(function(err, leave) {
         if (err) { return next(err); }
-        // Successful, so render.
-        res.render('leave_delete', 
-            { title: "Delete leave for Person '" + leave.person.fullName + "'", 
-            leave: leave, person: leave.person } );
-    });
-
-}
-
-// Display person's leave delete form on POST.
-exports.person_leave_delete_post = function(req, res, next) {
-    Leave.findById(req.params.leaveid).populate('person')
-    .exec(function(err, leave) {
-        if (err) { return next(err); }
             Leave.findByIdAndRemove(leave.id, function (err) {
                 if (err) { return next(err); }
-                // Success - go to organization list
                 res.redirect ('/persons/person/'+leave.person.id+'/leave');
             })
         // }
@@ -549,30 +555,11 @@ exports.person_training_modify_post = [
 
 ]
 
-// Display person's leave delete form on GET.
-exports.person_training_delete_get = function(req, res, next) {
-    Person_Training.findById(req.params.trainingid).populate('person')
-    .exec(function(err, person_training) {
-        if (err) { return next(err); }
-        // Successful, so render.
-        res.render('person_training_delete', 
-            { title: "Delete training for Person '" + person_training.person.fullName + "'", 
-            person: person_training.person,
-            person_training: person_training } );
-    });
-
-}
 
 // Display person's leave delete form on POST.
-exports.person_training_delete_post = function(req, res, next) {
-    Person_Training.findById(req.params.trainingid).populate('person')
-    .exec(function(err, person_training) {
+exports.person_training_delete_get = function(req, res, next) {
+    Person_Training.findByIdAndRemove(req.params.trainingid, function (err) {
         if (err) { return next(err); }
-        Person_Training.findByIdAndRemove(req.params.trainingid, function (err) {
-            if (err) { return next(err); }
-            // Success - go to organization list
-            res.redirect ('/persons/person/'+person_training.person+'/training');
-        })
+        res.redirect ('/persons/person/'+req.params.id+'/person_training');
     });
-
 }

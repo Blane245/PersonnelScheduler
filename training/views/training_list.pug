@@ -9,7 +9,7 @@ block content
   a(href='index') 
     button.btn.btn-large.btn-primary(type='button') Return to menu 
   p
-  if training_list
+  if trainings.length != 0
     table(class='table' id='training-table')
       thread 
         tr 
@@ -19,7 +19,7 @@ block content
           th(class='text-center' scope='col') Delete 
       tbody 
 
-        each training in training_list
+        each training in trainings
           tr 
             td(class='text-left') #{training.name}
             td(class='text-left') #{training.description}
@@ -27,8 +27,24 @@ block content
               a(href='trainings/training/'+training.id+'/modify' style="color:blue")
                 button(type='button' class='btn btn-small btn-primary') 
             td(class='text-center')
-              a(href='trainings/training/'+training.id+'/delete' style="color:red")
-                button(type='button' class='btn btn-small btn-danger')
+              button.btn.btn-small.btn-danger(data-toggle='modal' data-target='#delete-'+training.id)
   else
     ul
       li There are no trainings
+  for training in trainings
+      div(class='modal fade' id='delete-'+training.id aria-labelby='delete-'+training.id tabindex='-1' role='dialog' aria-hidden='true')
+          div.modal-dialog(role='document')
+              div.modal-content(role='document')
+                  div.modal-header
+                      -var title = 'Delete Training "' + training.name + "'"
+                      h2.modal-title #{title} 
+                      button.close(type='button' data-dismiss='modal' aria-label='Close')
+                          span(aria-hidden='true') &times;
+                  div.modal-body
+                      -var desc = "Description: " + training.description
+                      p #{desc}
+                      p Do you really want to delete this training record?
+                  div.modal-footer
+                      a(href='/trainings/training/'+training.id+'/delete')
+                          button.btn.btn-primary(type='button') OK
+                      button.btn.btn-danger(type='button' data-dismiss='modal') Cancel

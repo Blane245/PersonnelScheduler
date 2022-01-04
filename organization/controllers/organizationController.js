@@ -6,15 +6,57 @@ const { body, validationResult } = require('express-validator');
 var async = require('async');
 
 exports.organization_list = function (req, res, next) {
-    Organization.find({}, 'name description')
-        .sort({name: 1})
-        .exec(function (err, orgs) {
-            if (err) { return next(err); }
-            res.render(
-                '../views/organization_list', 
-                { title: 'Organization List', orgs: orgs });
+
+    // get all of the organizations and children records
+     async.parallel({
+        orgs: function(callback) {
+            Organization.find({}, callback).sort({name: 1});
+        },
+        
+        jobs: function(callback) {
+            Job.find({}, callback);
+        },
+        
+        persons: function(callback) {
+            Person.find({}, callback);
+        },
+        
+        roles: function(callback) {
+            Role.find({}, callback);
+        },
+            
+    }, function (err, results){
+
+        // build up the counts of the children records for each org
+        var orgData = [];
+        for (let i = 0; i < results.orgs.length; i++) {
+            orgData.push ({
+                name: results.orgs[i].name, 
+                description: results.orgs[i].description,
+                id: results.orgs[i].id, 
+                nRoles: 0,
+                nJobs: 0,
+                nPersons: 0});
+            for (let j = 0; j < results.roles.length; j++) {
+                if (results.roles[j].organization.toString() == results.orgs[i].id.toString()) {
+                    orgData[i].nRoles++;
+                }
+            }
+            for (let j = 0; j < results.jobs.length; j++) {
+                if (results.jobs[j].organization.toString() == results.orgs[i].id.toString()) {
+                    orgData[i].nJobs++;
+                }
+            }
+            for (let j = 0; j < results.roles.length; j++) {
+                if (results.persons[i].organization.toString() == results.orgs[i].id.toString()) {
+                    orgData[i].nPersons++;
+                }
+            }
         }
-    );
+        res.render(
+            '../views/organization_list', 
+            { title: 'Organization List', orgs: orgData });
+    });
 };
 
 // Display organization create form on GET.
@@ -115,68 +157,14 @@ exports.organization_modify_post = [
     }
 ]
 
-// Display organization delete form on GET.
+// Handle organization delete on POST.
 exports.organization_delete_get = function(req, res, next) {
 
-    Organization.findById(req.params.id).exec (function (err, org) {
+    Organization.findByIdAndRemove(req.params.id, function (err) {
         if (err) { return next(err); }
-        res.render('organization_delete', { 
-            title: "Delete organization '"+org.name+"'",
-            organization: org } );
+        res.redirect('/organizations')
     });
-
-};
-
-// Handle organization delete on POST.
-exports.organization_delete_post = function(req, res, next) {
-
-    // check if there are any children of the organization.
-    // If so, report the number and prevent delete
-    async.parallel({
-        job_count: function(callback) {
-            Job.countDocuments({'organization': req.params.id}, callback);
-        },
         
-        person_count: function(callback) {
-            Person.countDocuments({'organization': req.params.id}, callback);
-        },
-        
-        role_count: function(callback) {
-            Role.countDocuments({'organization': req.params.id}, callback);
-        },
-        
-    }, function (err, results){
-        var errors = validationResult(req).array();
-        if (results.job_count != 0) {
-            errors.push({msg: results.job_count + ' Jobs must be deleted before the organization can be deleted.'});
-        }
-        if (results.person_count != 0) {
-            errors.push({msg: results.person_count + ' Personnel must be removed before the organization can be deleted.'});
-        }
-        if (results.role_count != 0) {
-            errors.push({msg: results.role_count + ' Roles must be deleted before the organization can be deleted.'});
-        }
-
-        Organization.findById(req.params.id).exec (function (err, org) {
-            if (err) { return next(err); }
-
-            // redisplay the delete post page with errors
-            if (errors.length !=0) {
-                res.render('organization_delete', { 
-                    title: "Delete organization '"+org.name+"'",
-                    organization: org,
-                    errors:errors } );
-            } else {
-
-                // otherwise delete the record
-                Organization.findByIdAndRemove(req.params.id, function (err) {
-                    if (err) { return next(err); }
-                    res.redirect('/organizations')
-                });
-            }
-            
-        });
-    });
 }
 
 
