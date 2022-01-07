@@ -38,7 +38,7 @@ exports.index = function(req, res, next) {
         },
         
     }, function (err, results){
-        res.render('index', {title: 'Personnel Scheduler', results: results });
+        res.render('index', {results: results });
 
     });
 }

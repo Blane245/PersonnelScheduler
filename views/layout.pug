@@ -9,11 +9,17 @@ html(lang='en')
     script(src="/javascripts/bootstrap.min.js")
     link(rel='stylesheet', href='/stylesheets/style.css')
   body
-    div(class='container-fluid')
-      div(class='row')
-        div(class='col-sm-2')
+    div.container-fluid(style='background-color: azure;')
+      div.row
+        div.col-sm-2
+          img(src='/images/USSF-logo.jpg' style='width:100px;height:100px')
+        div.col-sm-8
+          h1.text-center Personnel Scheduling and Training Management 
+        div.col-sm-2
+      div.row
+        div.col-sm-2
           block sidebar
-            ul(class='sidebar-nav')
+            ul.sidebar-nav
               li
                 a(href='/index') Home
               li
@@ -21,5 +27,5 @@ html(lang='en')
               li
                 a(href='/trainings') Training Management
               li
-        div(class='col-sm-10')
+        div.col-sm-10
           block content

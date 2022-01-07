@@ -1,10 +1,26 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #[em Personnel Scheduler], blah, blah, blah.
+  p 
+    | Welcome to #[em Personnel Scheduling and Training Management] Application. 
+    | This application provides the means to
+  ul 
+    li Define organizations within the enterprise 
+    li Identifiy the personnel within an organization and move personnel from one organization to another 
+    li Define jobs required to be performed 
+    li Define the roles for the jobs 
+    li Define training requirement for job roles 
+    li Identify training records for personnel 
+    li Identify leave taken by personnel 
+    li Define tasks for jobs 
+    li Assign personnel to tasks based on their training qualifications and availability 
+    li Report on various aspects of the organization and training programs 
+  p 
+    | The application is devided into two major components, Organizational and Training Management.
+    | Organizational Management handles personnel, jobs, roles, and tasks, while 
+    | Training Management handles training program identification and keeps records of personnel training
 
-  h1 Dynamic content
+  h1 Contents of the Data Base
 
   if error
     p Error getting dynamic content.
@@ -19,35 +35,3 @@ block content
       li #[strong Tasks:] !{results.tasks_count}
       li #[strong Leaves:] !{results.leave_count}
       li #[strong Training:] !{results.training_count}
-  button.btn.btn-primary(type='button' data-toggle='modal' data-target='#exampleModal') Click here to trigger the modal! 
-  div(class='modal fade' id='exampleModal' tabindex='-1' role='dialog' aria-labeledby='exampleModal' aria-hidden='true')
-    div.modal-dialog(role='document')
-      div.modal-content(role='document')
-        div.modal-header 
-          h5.modal-title My First Modal 
-          button.close(type='button' data-dismiss='modal' aria-label='Close')
-            span(aria-hidden='true') &times;
-        div.modal-body
-          h1 Hello, I am a modal!
-        div.modal-footer 
-          button.btn.btn-primary(type='button' data-dismiss='modal') OK
-          button.btn.btn-secondary(type='button' data-dismiss='modal') Close
-  //- script(type='text/javascript').
-  //-   const modal = document.querySelector(".modal");
-  //-   const trigger = document.querySelector(".trigger");
-  //-   const closeButton = document.querySelector(".close-button");
-
-  //-   function toggleModal() {
-  //-     modal.classList.toggle("show-modal");
-  //-   }
-
-  //-   function windowOnClick (event) {
-  //-     if (event.target === modal) {
-  //-       toggleModal();
-  //-     }
-  //-   }
-
-  //-   trigger.addEventListener("click", toggleModal);
-  //-   closeButton.addEventListener("click", toggleModal);
-  //-   window.addEventListener("click", windowOnClick);
-
