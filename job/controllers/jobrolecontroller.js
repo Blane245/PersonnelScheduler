@@ -22,6 +22,43 @@ exports.job_roles_get = function(req, res, next) {
     });
 };
 
+// handle the reordering request for roles of a job
+exports.job_rolessave_get = function (req, res, next) {
+
+    // update the sequence of roles within a job
+    // nothing to validate
+
+    // get the job record 
+    console.log('in rolessave, body=', req.body);
+
+    // get the job record to be updated
+    Job.findById(req.body.job).exec (function (err, job) {
+
+        // retrieve the updated list of roles from the page
+        newRoles = []
+        for (let i = 0; i < job.role.length; i++) {
+            const parmName = 'r' + i;
+            const role = req.body[parmName];
+            newRoles.push(role);
+        }
+
+        // creata the new Job record with these new roles
+        newJob = new Job ({
+            name: job.name,
+            description: job.description,
+            organization: job.organization,
+            role: newRoles,
+            _id: job.id
+        });
+
+        // update the job record
+        Job.findByIdAndUpdate(job.id, newJob, {}, function (err) {
+            if (err) { return next(err); }
+            res.redirect ('/jobs/'+newJob.organization._id);
+        });
+    });
+}
+
 // Display role add to job form on GET.
 exports.job_role_add_get = function(req, res, next) {
     // need to make a selection list of all possible roles in an organization

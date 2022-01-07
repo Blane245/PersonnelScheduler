@@ -40,7 +40,7 @@ block content
             li There are no tasks for job #{job.name}
     //- build the delete modal dialogs 
     for task in tasks
-        div(class='modal fade' id='delete-'+task.id aria-labelby='delete-'+task.id tabindex='-1' role='dialog' aria-hidden='true')
+        div(class='modal fade modal-lx' id='delete-'+task.id aria-labelby='delete-'+task.id tabindex='-1' role='dialog' aria-hidden='true')
             div.modal-dialog(role='document')
                 div.modal-content(role='document')
                     div.modal-header

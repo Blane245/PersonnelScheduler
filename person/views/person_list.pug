@@ -41,7 +41,7 @@ block content
             li There are no persons for organization #{organization.name}
     //- build the delete modal dialogs
     for person in persons
-        div(class='modal fade' id='delete-'+person.id aria-labelby='delete-'+person.id tabindex='-1' role='dialog' aria-hidden='true')
+        div(class='modal fade modal-lx' id='delete-'+person.id aria-labelby='delete-'+person.id tabindex='-1' role='dialog' aria-hidden='true')
             div.modal-dialog(role='document')
                 div.modal-content(role='document')
                     div.modal-header

@@ -36,7 +36,7 @@ block content
             li There are no leaves for person #{person.fullName}
     //- build the delete modal dialogs 
     for leave in leaves
-        div(class='modal fade' id='delete-'+leave.id aria-labelby='delete-'+leave.id tabindex='-1' role='dialog' aria-hidden='true')
+        div(class='modal fade modal-lx' id='delete-'+leave.id aria-labelby='delete-'+leave.id tabindex='-1' role='dialog' aria-hidden='true')
             div.modal-dialog(role='document')
                 div.modal-content(role='document')
                     div.modal-header

@@ -16,20 +16,34 @@ block content
                     th(class='text-left' scope='col') Name 
                     th(class='text-left' scope='col') Description 
                     th(class='text-center' scope='col') Remove
+                    th(class='text-center' scope='col') 
+                    th(class='text-center' scope='col') 
             tbody 
 
                 each role in roles
-                    tr 
+                    tr.form-grid-table-row(id=role.id)
                         td(class='text-left') #{role.name}
                         td(class='text-left') #{role.description}
                         td(class='text-center')
                             button.btn.btn-small.btn-danger(data-toggle='modal' data-target='#delete-'+role.id)
+                        td(class='text-center') 
+                            a(href='#' class='up') ⇑
+                        td(class='text-center') 
+                            a(href='#' class='down') ⇓
+        form(method='POST' action='' novalidate)
+            - var irole = 0
+            for role in roles 
+                input.form-control(name='r'+irole id='r'+irole type='hidden')
+                - irole++
+            a(href='/jobs/job/'+job.id+'/roles')
+                button.btn.btn-large.btn-primary(type='submit', visibility=hidden, id='save') Save
+            input.form-control(name='job' id='job' type='hidden' value=job.id)
     else
         ul
             li There are no roles for job #{job.name}
     //- build the delete modal dialogs 
     for role in roles
-        div(class='modal fade' id='delete-'+role.id aria-labelby='delete-'+role.id tabindex='-1' role='dialog' aria-hidden='true')
+        div(class='modal fade modal-lx' id='delete-'+role.id aria-labelby='delete-'+role.id tabindex='-1' role='dialog' aria-hidden='true')
             div.modal-dialog(role='document')
                 div.modal-content(role='document')
                     div.modal-header
@@ -45,3 +59,28 @@ block content
                         a(href='/jobs/job/'+job.id+'/role/'+role.id+'/delete')
                             button.btn.btn-primary(type='button') OK
                         button.btn.btn-danger(type='button' data-dismiss='modal') Cancel
+    script.
+        $(document).ready(function() {
+            document.getElementById('save').style.visibility = 'hidden';                
+            $('.up,.down').click(function() {
+                var row = $(this).parents('tr:first');
+                if ($(this).is('.up')) {
+                    row.insertBefore(row.prev());
+                } else {
+                    row.insertAfter(row.next());
+                }
+                //- get the current positions of the roles in the table and send that off as 
+                //- parameters to the page processor for updating
+                var table = document.getElementById('job-table');
+                var tBody = table.tBodies[1];
+                var nRoles = tBody.children.length;
+                for (let i = 0; i < nRoles; i++) {
+                    const roleN = 'r'+i;
+                    document.getElementById('r'+i).value = tBody.children[i].id;
+                }
+                document.getElementById('save').style.visibility = 'visible';                
+            });
+            $('#save').click(function() {
+
+            });
+        });

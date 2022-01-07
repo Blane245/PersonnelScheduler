@@ -38,7 +38,7 @@ block content
             li There are no roles for organization #{organization.name}
     //- build the delete modal dialogs
     for role in role_list
-        div(class='modal fade' id='delete-'+role.id aria-labelby='delete-'+role.id tabindex='-1' role='dialog' aria-hidden='true')
+        div(class='modal fade modal-lx' id='delete-'+role.id aria-labelby='delete-'+role.id tabindex='-1' role='dialog' aria-hidden='true')
             div.modal-dialog(role='document')
                 div.modal-content(role='document')
                     div.modal-header

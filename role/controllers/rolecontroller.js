@@ -240,7 +240,6 @@ exports.role_training_create_get = function(req, res, next) {
     }); 
 };
 
-//TODO avoid dujplicates on add and modify role/training
 // add a training requirement to a role POST
 exports.role_training_create_post = function (req, res, next) {
 

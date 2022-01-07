@@ -32,7 +32,7 @@ block content
         li There are no training requirements for role #{role.name}
     //- build the delete modal dialogs 
     for training in trainings
-        div(class='modal fade' id='delete-'+training.id aria-labelby='delete-'+training.id tabindex='-1' role='dialog' aria-hidden='true')
+        div(class='modal fade modal-lx' id='delete-'+training.id aria-labelby='delete-'+training.id tabindex='-1' role='dialog' aria-hidden='true')
             div.modal-dialog(role='document')
                 div.modal-content(role='document')
                     div.modal-header

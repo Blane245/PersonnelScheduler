@@ -20,7 +20,7 @@ block content
                 required='false' value=(undefined==job ? '' : job.description))
         button.btn.btn-primary(type='submit') Submit
         p
-        a(href='/jobs/'+org)
+        a(href='/jobs/'+org.id)
             button.btn.btn-danger(type='button') Cancel
     if errors 
         ul  

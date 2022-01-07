@@ -40,7 +40,7 @@ block content
             li There are no jobs for organization #{organization.name}
     //- build the delete modal dialogs
     for job in job_list
-        div(class='modal fade' id='delete-'+job.id aria-labelby='delete-'+job.id tabindex='-1' role='dialog' aria-hidden='true')
+        div(class='modal fade modal-lx' id='delete-'+job.id aria-labelby='delete-'+job.id tabindex='-1' role='dialog' aria-hidden='true')
             div.modal-dialog(role='document')
                 div.modal-content(role='document')
                     div.modal-header

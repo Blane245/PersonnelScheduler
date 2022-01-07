@@ -26,6 +26,9 @@ router.get('/job/:id/delete', job_controller.job_delete_get);
 /* GET request for editing roles for a job */
 router.get('/job/:id/roles', job_role_controller.job_roles_get);
 
+/* PUT request for reordering roles for a job */
+router.post('/job/:id/roles', job_role_controller.job_rolessave_get);
+
 /* GET request for adding a role to a job */
 router.get('/job/:id/role/add', job_role_controller.job_role_add_get);
 
