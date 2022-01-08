@@ -1,0 +1,20 @@
+extends ../../views/report_layout
+
+block content
+    h1.text-center= title 
+
+    //- loop thru all of the persons
+    for item in report_data
+        if (item.training_data.length != 0)
+            //- Identify the person
+            h2= item.person.fullName + ' (' + item.person.email + ')'
+            table.table-bordered.table-hover.table-sm.table-responsive(class='table' id='training-table')
+                thead.thead-dark 
+                    tr 
+                        th.text-left(scope='col') Training 
+                        th.text-left(scope='col') Expiration Date 
+                tbody 
+                    each record in item.training_data
+                        tr 
+                            td(class='text-left') #{record.training.name}
+                            td(class='text-left') #{record.training.expirationDate}

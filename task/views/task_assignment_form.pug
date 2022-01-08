@@ -26,16 +26,16 @@ block content
                     select.form-control(type='select', placeholder='Select person' id=roleTag name=roleTag required='true' )
                         option(value='') --- Select Person for Role --- 
                         for person in role.persons 
-                            if (person.qualified && person.available)
+                            if (person.qualification.qualified && person.availability.available)
                                 - s = 'text-primary'
                                 - t = person.name + ' (qualified and available)'
-                            else if (person.qualified && !person.available)
+                            else if (person.qualification.qualified && !person.availability.available)
                                 - s = 'text-success'
                                 - t = person.name + ' (qualified and not available)'
-                            else if (!person.qualified && person.available)
+                            else if (!person.qualification.qualified && person.availability.available)
                                 - s = 'text-warning'
                                 - t = person.name + ' (not qualified but available)'
-                            else if (!person.qualified && !person.available)
+                            else if (!person.qualification.qualified && !person.availability.available)
                                 - s = 'text-danger'
                                 - t = person.name + ' (not qualified and not available)'
                             if (person.selected)

@@ -7,6 +7,7 @@ const Job = require('../../models/job');
 const Role = require('../../models/role');
 const Task = require('../../models/task');
 const Training = require('../../models/training');
+const helpers = require('../../helpers/helpers')
 
 // this controller does the heavy lifting of the Personnel Scheduling app
 // Tasks are what people do. In here are the CRUD controller for tasks
@@ -245,7 +246,7 @@ exports.task_assign_get =  function (req, res, next) {
                 Leave.find({'person': orgPersons}).exec(function (err, leaves) {
                     if (err) { return next(err);}
                     // get all the person_trainings for all of the people in the organization
-                    Person_Training.find({'person': orgPersons}).exec(function (err, person_trainings) {
+                    Person_Training.find({'person': orgPersons}).populate('training').exec(function (err, person_trainings) {
                         // we need to check each person's availability for the task
                         // and then if they are available, then check their qualification for each role
 
@@ -267,8 +268,8 @@ exports.task_assign_get =  function (req, res, next) {
                                 var personId = orgPersons[iperson].id;
                                 
                                 // TODO check other tasks to see if the person is assigned to another task
-                                var available = isAvailable(task.startDate_formatted, task.endDate_formatted, orgPersons[iperson].id, leaves);
-                                var qualified = isQualified(task.endDate, roleTrainings, person_trainings, orgPersons[iperson].id);
+                                var availability = helpers.Availability(task.startDate_formatted, task.endDate_formatted, orgPersons[iperson].id, leaves);
+                                var qualification= helpers.Qualification(task.endDate, roleTrainings, person_trainings, orgPersons[iperson].id);
 
                                 // see if the person is currently selected
                                 var selected = isSelected (irole, taskPersons, orgPersons[iperson]);
@@ -276,8 +277,8 @@ exports.task_assign_get =  function (req, res, next) {
                                 personData.push (
                                     {name: personName, 
                                     id: personId, 
-                                    qualified: qualified, 
-                                    available: available, 
+                                    qualification: qualification, 
+                                    availability: availability, 
                                     selected: selected});
                             }
 
@@ -288,7 +289,7 @@ exports.task_assign_get =  function (req, res, next) {
                                 persons: personData
                             });
                         }
-                        
+                        // TODO add popup to view reasons for quals and avails
                         // ready to display the task assignment page
                         res.render('task_assignment_form', { 
                             title: "Assign Personnel for Task '" + task.name + "' of Job '" + job.name + "'",
@@ -303,58 +304,6 @@ exports.task_assign_get =  function (req, res, next) {
     });
 }
 
-//some helper functions
-// isAvaialble - bodys all of the leaves to see if any of them overlap with the start and end dates
-function isAvailable (startDate, endDate, person, leaves) {
-
-    var available = true;
-    for (let i = 0; i < leaves.length; i++) {
-        if (leaves[i].person == person) {
-            // console.log('leave start: ', leaves[i].startDate_formatted);
-            // console.log('leave end: ', leaves[i].endDate_formatted);
-            // console.log('task start: ', startDate);
-            // console.log('leave start: ', endDate);
-            if (leaves[i].startDate_formatted <= endDate && leaves[i].endDate && leaves[i].endDate_formatted > startDate)
-                available = false;
-            if (leaves[i].startDate_formatted <= endDate && !leaves[i].endDate)
-                available = false;
-            if (!available) break;
-
-        };
-
-    }
-    return available;
-
-}
-
-// isQualified - for a person to be qualified, all of their role's equired training
-// record must not expire before the end date of the task
-function isQualified (endDate, role_trainings, person_trainings, person) {
-    var qualified = false;
-    var nQuals = 0;
-    // console.log(person.toString());
-    // now check the person's training records against those required
-    for (let irt = 0; irt < role_trainings.length; irt++) {
-        // console.log(role_trainings[irt].toString());
-        for (let ipt = 0; ipt < person_trainings.length; ipt++) {
-            // console.log(person_trainings[ipt].training.toString());
-            // console.log(person_trainings[ipt].person.toString());
-            // skip if this training is not for the person being processed
-            if ( role_trainings[irt].toString() == person_trainings[ipt].training.toString() && person.toString() == person_trainings[ipt].person.toString()) {
-                if (person_trainings[ipt].expirationDate && person_trainings[ipt].expirationDate <= endDate) 
-                    {}
-                else
-                    nQuals++;
-
-            }
-        }
-    }
-
-    // person must have all required training for a role
-    if (nQuals == role_trainings.length)
-        qualified = true;
-    return qualified;
-}
 
 
 // see if a person is selected for a role 

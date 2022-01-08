@@ -1,32 +1,22 @@
 doctype html
 html(lang='en')
   head
-    title= title
+    title Personnel Scheduling and Training Reports
     meta(charset='utf-8')
     meta(name='viewport', content='width=device-width, initial-scale=1')
     link(rel="stylesheet", href="/stylesheets/bootstrap.min.css")
     script(src="/javascripts/jquery-3.5.1.slim.min.js")
     script(src="/javascripts/bootstrap.min.js")
-    link(rel='stylesheet', href='/stylesheets/style.css')
+    link(rel='stylesheet', href='/stylesheets/report_style.css')
   body
     div.container-fluid(style='background-color: azure;')
       div.row
         div.col-sm-2
           img(src='/images/USSF-logo.jpg' style='width:100px;height:100px')
         div.col-sm-8
-          h1.text-center Personnel Scheduling and Training Management 
+          h1.text-center Personnel Scheduling Report
         div.col-sm-2
+          h5= dateTime
       div.row
-        div.col-sm-2
-          block sidebar
-            ul.sidebar-nav
-              li
-                a(href='/index') Home
-              li
-                a(href='/organizations') Organization Management
-              li
-                a(href='/trainings') Training Management
-              li
-                a(href='/reports') Reports
-        div.col-sm-10
+        div.col-sm-12
           block content

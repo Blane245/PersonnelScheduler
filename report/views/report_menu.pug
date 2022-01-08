@@ -1,0 +1,56 @@
+extends ../../views/layout
+
+block content
+    p 
+        | Various reports available 
+    ul 
+        li Training records for all personnel, by organization, or by individual 
+        li Task records for all tasks, by organization, or by job
+        li Personnel qualifications for all roles, by roles in an organization, or by a job 
+        li Personnel availability for a time period, for all personnel, by organization, or by individual
+    h1 Training Records 
+    form(method='POST' action='')
+        div.row
+            div.col-sm-4
+                    button.btn.btn-primary(type='submit' name='training_all') All Personnel
+            div.col-sm-4 
+                    button.btn.btn-primary(type='submit' name='training_org') For an Organization
+                    br
+                    label(for='org') Organization:  
+                    select#org.form-control(type='select' placeholder='Select organization' name='org' required='false' )
+                        - orgs.sort(function(a, b) {let textA = a.name.toUpperCase(); let textB = b.name.toUpperCase(); return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;});
+                        for org in orgs
+                            option(value=org.id)  #{org.name}
+            div.col-sm-4
+                    button.btn.btn-primary(type='submit' name='training_person') For a Person
+                    br
+                    label(for='person') Person:  
+                    select#person.form-control(type='select' placeholder='Select person' name='person' required='false' )
+                        - persons.sort(function(a, b) {let textA = a.fullName.toUpperCase(); let textB = b.fullName.toUpperCase(); return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;});
+                        for person in persons
+                            -var option = person.fullName + ' (' + person.email+')'
+                            option(value=person.id)  #{option}
+    hr(style='height:5px')
+    h1 Task Records 
+    form(method='POST' action='')
+        div.row
+            div.col-sm-4
+                    button.btn.btn-primary(type='submit' name='task_all') All Personnel
+            div.col-sm-4 
+                    button.btn.btn-primary(type='submit' name='task_org') For an Organization
+                    br
+                    label(for='org') Organization:  
+                    select#orgtask.form-control(type='select' placeholder='Select organization' name='orgtask' required='false' )
+                        - orgs.sort(function(a, b) {let textA = a.name.toUpperCase(); let textB = b.name.toUpperCase(); return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;});
+                        for org in orgs
+                            option(value=org.id)  #{org.name}
+            div.col-sm-4
+                    button.btn.btn-primary(type='submit' name='task_job') For a Job
+                    br
+                    label(for='job') Job:  
+                    select#jobtask.form-control(type='select' placeholder='Select job' name='jobtask' required='false' )
+                        - jobs.sort(function(a, b) {let textA = a.name.toUpperCase(); let textB = b.name.toUpperCase(); return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;});
+                        for job in jobs
+                            option(value=job.id)  #{job.name}
+    
+

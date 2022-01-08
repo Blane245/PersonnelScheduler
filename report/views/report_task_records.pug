@@ -1,0 +1,57 @@
+extends ../../views/report_layout
+
+block content
+    h1.text-center= title 
+
+    //- loop thru all of the organizations
+    for item in report_data
+        //- Identify the organization
+        h2= 'Organization: ' + item.org.name
+        //- loop through all of the jobs
+        for job_item in item.job_data
+            - console.log('Job item: ' + job_item);
+            h3= 'Job: '+ job_item.job.name
+            //- loop thorugh all of the tasks
+            table.table-bordered.table-hover.table-sm.table-responsive(class='table' id='task-table')
+                thead.thead-dark 
+                    tr 
+                        th.text-left(scope='col') Name 
+                        th.text-left(scope='col') Start Date
+                        th.text-left(scope='col') End Date 
+                        th.text-left(scope='col') Role 
+                        th.text-left(scope='col') Person 
+                tbody 
+                    for task_item in job_item.task_data
+                        - console.log('Task item: ' + task_item);
+                        tr 
+                            td(class='text-left')= task_item.task.name
+                            td(class='text-left')= task_item.task.startDate_formatted
+                            td(class='text-left')= task_item.task.endDate_formatted
+                            td(class='text-left')
+                                table(class='table')
+                                    thead
+                                        tr
+                                            th.text-left(scope='col') Name 
+                                    tbody
+                                        for role in task_item.task.roles 
+                                            tr 
+                                                td(class='text-left') #{role.name}
+                            td(class='text-left')
+                                table(class='table')
+                                    thead
+                                        tr
+                                            th.text-left(scope='col') Name 
+                                            th.text-center(scope='col') Available
+                                            th.text-center(scope='col') Qualified
+                                    tbody
+                                        for person in task_item.task.persons 
+                                            tr 
+                                                -var a = (person.available)? 'yes': 'no'
+                                                -var q = (person.qualified)? 'yes': 'no'
+                                                td(class='text-left') #{person.fullName}
+                                                td(class='text-center') #{a}
+                                                td(class='text-center') #{q} 
+                            
+
+
+                                    

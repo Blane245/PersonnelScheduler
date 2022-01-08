@@ -2,7 +2,6 @@ var Job = require('../../models/job');
 var Role = require('../../models/role');
 const { validationResult, body } = require('express-validator');
 var async = require('async');
-const organization = require('../../models/organization');
 // Handle roles for a job form on GET.
 exports.job_roles_get = function(req, res, next) {
     async.parallel ({

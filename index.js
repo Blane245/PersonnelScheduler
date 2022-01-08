@@ -10,6 +10,7 @@ var roleRouter = require('./role/routes/role.js');
 var trainingRouter = require('./training/routes/training.js');
 var personRouter = require('./person/routes/person.js');
 var taskRouter = require('./task/routes/task.js');
+var reportRouter = require('./report/routes/report.js');
 var app = express();
  
 //pug view engine setup
@@ -20,7 +21,8 @@ app.set('views', [
   path.join(__dirname, 'role/views'),
   path.join(__dirname, 'training/views'),
   path.join(__dirname, 'person/views'),
-  path.join(__dirname, 'task/views')
+  path.join(__dirname, 'task/views'),
+  path.join(__dirname, 'report/views')
 ]);
 app.set('view engine', 'pug');
 app.set('vew options', {pretty: true});
@@ -39,6 +41,7 @@ app.use('/roles', roleRouter );
 app.use('/trainings', trainingRouter );
 app.use('/persons', personRouter );
 app.use('/tasks', taskRouter );
+app.use('/reports', reportRouter );
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
