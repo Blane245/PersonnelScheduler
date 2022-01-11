@@ -27,9 +27,6 @@ exports.job_rolessave_get = function (req, res, next) {
     // update the sequence of roles within a job
     // nothing to validate
 
-    // get the job record 
-    console.log('in rolessave, body=', req.body);
-
     // get the job record to be updated
     Job.findById(req.body.job).exec (function (err, job) {
 

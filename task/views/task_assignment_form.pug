@@ -11,38 +11,52 @@ block content
         li #[strong Not] Available and #[strong Not] Qualified, the name is #[strong.text-danger this color]
     p Once a person is selected, the name is displayed #[strong.text-muted muted]
     form(method='POST' action='' novalidate )
-        //- loop through each role 
         if roles && roles.length != 0 
-            - var irole = 0
-            for role in roles 
-                hr
-                //- loop through each person in the organization building a slection list
-                //- and indicating is they are qualified, available, and selected
-                div.form-group
-                    - var roleTag = 'Role'+irole
-                    - var s = 'text-dark'
-                    - var t
-                    label(for=roleTag) #[strong #{role.name}]
-                    select.form-control(type='select', placeholder='Select person' id=roleTag name=roleTag required='true' )
-                        option(value='') --- Select Person for Role --- 
-                        for person in role.persons 
-                            if (person.qualification.qualified && person.availability.available)
-                                - s = 'text-primary'
-                                - t = person.name + ' (qualified and available)'
-                            else if (person.qualification.qualified && !person.availability.available)
-                                - s = 'text-success'
-                                - t = person.name + ' (qualified and not available)'
-                            else if (!person.qualification.qualified && person.availability.available)
-                                - s = 'text-warning'
-                                - t = person.name + ' (not qualified but available)'
-                            else if (!person.qualification.qualified && !person.availability.available)
-                                - s = 'text-danger'
-                                - t = person.name + ' (not qualified and not available)'
-                            if (person.selected)
-                                option(value=person.id class=s selected) #{t}
-                            else
-                                option(value=person.id class=s) #{t}
-                - irole++
+            table(class='table' id='job-table')
+                thread 
+                    tr 
+                    th(class='text-left' scope='col') Role 
+                    th(class='text-left' scope='col') Name 
+                    th(class='text-left' scope='col') Availability Exceptions
+                    th(class='text-left' scope='col') Qualification Exceptions
+                tbody 
+                    - var irole = 0
+                    for role in roles 
+                        tr
+                            - var roleTag = 'Role'+irole
+                            //- loop through each person in the organization building a slection list
+                            //- and indicating is they are qualified, available, and selected
+                            td
+                                p= role.name
+                            td
+                                - var s = 'text-dark'
+                                - var t
+                                select.form-control(type='select', placeholder='Select person' id=role.id name=roleTag required='true' onchange='changePerson(event)')
+                                    option(value='') --- Select Person for Role ---
+                                    - var selectedPerson = 0; 
+                                    for person in role.persons 
+                                        if (person.qualification.qualified && person.availability.available)
+                                            - s = 'text-primary'
+                                            - t = person.name + ' (qualified and available)'
+                                        else if (person.qualification.qualified && !person.availability.available)
+                                            - s = 'text-success'
+                                            - t = person.name + ' (qualified and not available)'
+                                        else if (!person.qualification.qualified && person.availability.available)
+                                            - s = 'text-warning'
+                                            - t = person.name + ' (not qualified but available)'
+                                        else if (!person.qualification.qualified && !person.availability.available)
+                                            - s = 'text-danger'
+                                            - t = person.name + ' (not qualified and not available)'
+                                        if (person.selected)
+                                            - selectedPerson = person.id
+                                            option(value=person.id class=s selected) #{t}
+                                        else
+                                            option(value=person.id class=s) #{t}
+                            td(class='text-center')
+                                button.btn.btn-small.btn-dark(type='button' id='avail-r'+role.id data-toggle='modal' data-target='#avail-r'+role.id+'p'+selectedPerson)
+                            td(class='text-center')
+                                button.btn.btn-small.btn-dark(type='button' id='qual-r'+role.id data-toggle='modal' data-target='#qual-r'+role.id+'p'+selectedPerson)
+                            - irole++
         button.btn.btn-primary(type='submit' name='save' value='save' onclick='checkDuplicates(event)') Save
         p 
         a(href='/jobs/job/'+job.id+'/tasks')
@@ -79,3 +93,49 @@ block content
             if (nErrors != 0)
                 event.preventDefault();
         }
+
+        // switch the avaiability and qualification buttons for the role person just changed
+        function changePerson(event) {
+
+            var roleID = event.currentTarget.id; //- role.id
+            var personID = event.currentTarget.options[event.currentTarget.selectedIndex].value; // - person.id
+            var dataTarget = 'r'+roleID+'p'+personID;
+            var availButton = document.getElementById('avail-r'+roleID); //- available button
+            var qualButton = document.getElementById('qual-r'+roleID); //- available button
+            availButton.dataset.target='#avail-'+dataTarget;
+            qualButton.dataset.target='#qual-'+dataTarget;
+
+        }
+    //- build the qualification and availability modals 
+    for role in roles
+        for person in role.persons
+            div(class='modal fade modal-lx' id='avail-r'+role.id+'p'+person.id aria-labelby=id='avail-r'+role.id+'p'+person.id tabindex='-1' role='dialog' aria-hidden='true')
+                div.modal-dialog(role='document')
+                    div.modal-content(role='document')
+                        div.modal-header
+                            h4= "Availabiliyy Exception for '" + person.name + "'"
+                            button.close(type='button' data-dismiss='modal' aria-label='Close')
+                                span(aria-hidden='true') &times;
+                        div.modal-body
+                            if (person.availability.reasons.length != 0)
+                                for reason in person.availability.reasons
+                                    p= reason
+                            else 
+                                p There are no exceptions. Person is available
+                        div.modal-footer
+                            button.btn.btn-primary(type='button' data-dismiss='modal') OK 
+            div(class='modal fade modal-lx' id='qual-r'+role.id+'p'+person.id aria-labelby=id='qual-r'+role.id+'p'+person.id tabindex='-1' role='dialog' aria-hidden='true')
+                div.modal-dialog(role='document')
+                    div.modal-content(role='document')
+                        div.modal-header
+                            h4= "Qualification Exception for '" + person.name + "' for role '" + role.name + "'"
+                            button.close(type='button' data-dismiss='modal' aria-label='Close')
+                                span(aria-hidden='true') &times;
+                        div.modal-body
+                            if (person.qualification.reasons.length != 0)
+                                for reason in person.qualification.reasons
+                                    p= reason
+                            else 
+                                p There are no exceptions. Person is qualified
+                        div.modal-footer
+                            button.btn.btn-primary(type='button' data-dismiss='modal') OK

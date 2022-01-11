@@ -175,7 +175,7 @@ exports.task_modify_post = [
 
         // get the existing task record for modification
         Task.findById(req.params.taskid).populate('job').exec(function (err, task) {
-            if (err) { next(err); console.log(err);}
+            if (err) { next(err);}
             // check if there is another task with this name in the job
             Task.findOne({'name': req.body.name, 'job': task.job})
                 .exec (function (err, anotherTask) {
@@ -239,63 +239,77 @@ exports.task_assign_get =  function (req, res, next) {
         Person.find({'organization': job.organization}).exec(function (err, orgPersons) {
             if (err) { return next(err);}
 
+            // get the task be processed and its roles
             Task.findById(req.params.taskid).populate('roles').exec(function (err, task) {
                 if (err) { return next(err);}
 
-                // get all the leaves for all of the people in the organization
-                Leave.find({'person': orgPersons}).exec(function (err, leaves) {
+                // get the training for the roles
+                Role.find({'roles': task.roles}).populate('trainings').exec(function (err, roles) {
                     if (err) { return next(err);}
-                    // get all the person_trainings for all of the people in the organization
-                    Person_Training.find({'person': orgPersons}).populate('training').exec(function (err, person_trainings) {
-                        // we need to check each person's availability for the task
-                        // and then if they are available, then check their qualification for each role
 
-                        // process each role for the job in turn
-                        var rolepersons = [];
-                        var taskPersons = task.persons;
-                        if (taskPersons.length == 0)
-                            taskPersons.length = task.roles.length;
-                        for (let irole = 0; irole < task.roles.length; irole++) {
-                            var roleName = task.roles[irole].name;
-                            var roleid = task.roles[irole].id;
-                            var roleTrainings = task.roles[irole].trainings;
+                    // get all the leaves for all of the people in the organization
+                    Leave.find({'person': orgPersons}).exec(function (err, leaves) {
+                        if (err) { return next(err);}
 
-                            // build the persons array for each role
-                            var personData = [];
-                            for (let iperson = 0; iperson < orgPersons.length; iperson++){
+                        // get all the person_trainings for all of the people in the organization
+                        Person_Training.find({'person': orgPersons}).populate('training').exec(function (err, person_trainings) {
+                            if (err) { return next(err);}
 
-                                var personName = orgPersons[iperson].fullName;
-                                var personId = orgPersons[iperson].id;
-                                
-                                // TODO check other tasks to see if the person is assigned to another task
-                                var availability = helpers.Availability(task.startDate_formatted, task.endDate_formatted, orgPersons[iperson].id, leaves);
-                                var qualification= helpers.Qualification(task.endDate, roleTrainings, person_trainings, orgPersons[iperson].id);
+                            // finally get all of defined tasks
+                            Task.find({}).exec(function (err, tasks){
+                                if (err) { return next(err);}
+                                // we need to check each person's availability for the task
+                                // and then if they are available, then check their qualification for each role
 
-                                // see if the person is currently selected
-                                var selected = isSelected (irole, taskPersons, orgPersons[iperson]);
-                                // pile up the data on this person
-                                personData.push (
-                                    {name: personName, 
-                                    id: personId, 
-                                    qualification: qualification, 
-                                    availability: availability, 
-                                    selected: selected});
-                            }
+                                // process each role for the job in turn
+                                var rolepersons = [];
+                                var taskPersons = task.persons;
+                                if (taskPersons.length == 0)
+                                    taskPersons.length = task.roles.length;
+                                for (let irole = 0; irole < task.roles.length; irole++) {
+                                    var roleName = task.roles[irole].name;
+                                    var roleid = task.roles[irole].id;
+                                    var roleTrainings = roles[irole].trainings;
 
-                            // pile up the data on this role
-                            rolepersons.push ({
-                                name: roleName,
-                                id: roleid,
-                                persons: personData
+                                    // build the persons array for each role
+                                    var personData = [];
+                                    for (let iperson = 0; iperson < orgPersons.length; iperson++){
+
+                                        var personName = orgPersons[iperson].fullName;
+                                        var personId = orgPersons[iperson].id;
+                                        
+                                        //TODO check other tasks to see if the person is assigned to another task #
+                                        var availability = helpers.Availability(task.startDate_formatted, task.endDate_formatted, task.id, orgPersons[iperson].id, leaves, tasks);
+                                        var qualification= helpers.Qualification(task.endDate, roleTrainings, person_trainings, orgPersons[iperson].id);
+
+                                        // see if the person is currently selected
+                                        var selected = isSelected (irole, taskPersons, orgPersons[iperson]);
+                                        // pile up the data on this person
+                                        personData.push (
+                                            {name: personName, 
+                                            id: personId, 
+                                            qualification: qualification, 
+                                            availability: availability, 
+                                            selected: selected});
+                                    }
+
+                                    // pile up the data on this role
+                                    rolepersons.push ({
+                                        name: roleName,
+                                        id: roleid,
+                                        persons: personData
+                                    });
+                                }
+                                // TODO add popup to view reasons for quals and avails 
+                                // ready to display the task assignment page
+                                res.render('task_assignment_form', { 
+                                    title: "Assign Personnel for Task '" + task.name + "' of Job '" + job.name + "'",
+                                    job:job,
+                                    task: task,
+                                    roles: rolepersons});
+
                             });
-                        }
-                        // TODO add popup to view reasons for quals and avails
-                        // ready to display the task assignment page
-                        res.render('task_assignment_form', { 
-                            title: "Assign Personnel for Task '" + task.name + "' of Job '" + job.name + "'",
-                            job:job,
-                            roles: rolepersons});
-
+                        });
                     });
                 });
 

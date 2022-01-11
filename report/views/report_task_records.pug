@@ -9,20 +9,17 @@ block content
         h2= 'Organization: ' + item.org.name
         //- loop through all of the jobs
         for job_item in item.job_data
-            - console.log('Job item: ' + job_item);
             h3= 'Job: '+ job_item.job.name
-            //- loop thorugh all of the tasks
-            table.table-bordered.table-hover.table-sm.table-responsive(class='table' id='task-table')
+            //- loop through all of the tasks of the job
+            table.table-bordered.table-hover.table-sm(class='table' id='task-tablej-'+job_item.job.id)
                 thead.thead-dark 
                     tr 
                         th.text-left(scope='col') Name 
                         th.text-left(scope='col') Start Date
                         th.text-left(scope='col') End Date 
-                        th.text-left(scope='col') Role 
-                        th.text-left(scope='col') Person 
+                        th.text-center(scope='col') Role/Person 
                 tbody 
                     for task_item in job_item.task_data
-                        - console.log('Task item: ' + task_item);
                         tr 
                             td(class='text-left')= task_item.task.name
                             td(class='text-left')= task_item.task.startDate_formatted
@@ -31,26 +28,23 @@ block content
                                 table(class='table')
                                     thead
                                         tr
-                                            th.text-left(scope='col') Name 
+                                            th.text-left(scope='col') Role Name 
+                                            th.text-left(scope='col') Person Name 
+                                            th.text-left(scope='col') Available
+                                            th.text-left(scope='col') Qualified
                                     tbody
-                                        for role in task_item.task.roles 
+                                        for role_item in task_item.roleData
                                             tr 
-                                                td(class='text-left') #{role.name}
-                            td(class='text-left')
-                                table(class='table')
-                                    thead
-                                        tr
-                                            th.text-left(scope='col') Name 
-                                            th.text-center(scope='col') Available
-                                            th.text-center(scope='col') Qualified
-                                    tbody
-                                        for person in task_item.task.persons 
-                                            tr 
-                                                -var a = (person.available)? 'yes': 'no'
-                                                -var q = (person.qualified)? 'yes': 'no'
-                                                td(class='text-left') #{person.fullName}
-                                                td(class='text-center') #{a}
-                                                td(class='text-center') #{q} 
+                                                td(class='text-left')= role_item.role.name
+                                                -var a = (role_item.availability.available)? 'yes': 'no'
+                                                -var q = (role_item.qualification.qualified)? 'yes': 'no'
+                                                td(class='text-left')= role_item.person.fullName
+                                                td(class='text-center')= a
+                                                    for reason in role_item.availability.reasons
+                                                        p.text-left= reason
+                                                td(class='text-center')= q
+                                                    for reason in role_item.qualification.reasons
+                                                        p.text-left= reason
                             
 
 

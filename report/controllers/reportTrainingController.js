@@ -70,7 +70,7 @@ exports.report_training_org = function (req,res,next,now) {
                     }
                 }
 
-                // render the report
+                // render the report 
                 var title = (persons.length == 0)?
                     "There are no Personnel in Organization '"+org.name+'"':
                     "Training Records for all Personnel in Organization '"+org.name+"'";
