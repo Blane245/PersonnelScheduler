@@ -54,13 +54,12 @@ exports.Qualification = function(endDate, role_trainings, person_trainings, pers
             // skip if this training is not for the person being processed
             if (role_training._id.toString() == person_training.training._id.toString() && 
                 person.toString() == person_training.person._id.toString()) {
+                rtTags[irt] = true;
                 if (person_training.expirationDate && person_training.expirationDate <= endDate){
-                    result.reasons.push ("Training '"+person_training.training.name+
+                    result.reasons.push ("Training '"+role_training.name+
                         "' expires on "+person_training.expirationDate_formatted+
-                        " pror to the task's start date");
+                        " pror to the task's end date");
                     result.qualified = false;
-                } else
-                    rtTags[irt] = true;
             }
         }
     }

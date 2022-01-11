@@ -5,12 +5,13 @@ block content
         | Various reports available 
     ul 
         li Training records for all personnel, by organization, or by individual 
+        li Training records for all training requirements with personnel listed, for all personnel or for an organization
         li Task records for all tasks, by organization, or by job
-        li Personnel qualifications for all roles, by roles in an organization, or by a job 
+        li Personnel qualifications for all roles in all jobs, by roles for jobs in an organization, or for a specific job 
         li Personnel availability for a time period, for all personnel, by organization, or by individual
-    h1 Training Records 
+    h1 Personnel Training Records 
     form(method='POST' action='')
-        div.row
+        div.row.mt-2
             div.col-sm-4
                     button.btn.btn-primary(type='submit' name='training_all') All Personnel
             div.col-sm-4 
@@ -30,10 +31,23 @@ block content
                         for person in persons
                             -var option = person.fullName + ' (' + person.email+')'
                             option(value=person.id)  #{option}
-    hr(style='height:5px')
+    h1 Training Class Records
+    form(method='POST' action='')
+        div.row.mt-2
+            div.col-sm-4
+                    button.btn.btn-primary(type='submit' name='training_course_all') All Personnel
+            div.col-sm-4 
+                    button.btn.btn-primary(type='submit' name='training_course_org') For an Organization
+                    br
+                    label(for='org') Organization:  
+                    select#org.form-control(type='select' placeholder='Select organization' name='orgtrain' required='false' )
+                        - orgs.sort(function(a, b) {let textA = a.name.toUpperCase(); let textB = b.name.toUpperCase(); return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;});
+                        for org in orgs
+                            option(value=org.id)  #{org.name}
+    hr(style='height:5px;')
     h1 Task Records 
     form(method='POST' action='')
-        div.row
+        div.row.mt-2
             div.col-sm-4
                     button.btn.btn-primary(type='submit' name='task_all') All Personnel
             div.col-sm-4 
@@ -49,6 +63,63 @@ block content
                     br
                     label(for='job') Job:  
                     select#jobtask.form-control(type='select' placeholder='Select job' name='jobtask' required='false' )
+                        - jobs.sort(function(a, b) {let textA = a.name.toUpperCase(); let textB = b.name.toUpperCase(); return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;});
+                        for job in jobs
+                            option(value=job.id)  #{job.name}
+    hr(style='height:5px;')
+    h1 Personnel Qualifications
+    form(method='POST' action='')
+        div.row.mt-2
+            div.col-sm-4
+                    button.btn.btn-primary(type='submit' name='person_qual_all') All Personnel
+            div.col-sm-4 
+                    button.btn.btn-primary(type='submit' name='person_qual_org') For an Organization
+                    br
+                    label(for='org') Organization:  
+                    select#orgtask.form-control(type='select' placeholder='Select organization' name='orgpersonqual' required='false' )
+                        - orgs.sort(function(a, b) {let textA = a.name.toUpperCase(); let textB = b.name.toUpperCase(); return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;});
+                        for org in orgs
+                            option(value=org.id)  #{org.name}
+            div.col-sm-4
+                    button.btn.btn-primary(type='submit' name='person_qual_job') For a Job
+                    br
+                    label(for='job') Job:  
+                    select#jobtask.form-control(type='select' placeholder='Select job' name='jobpersonqual' required='false' )
+                        - jobs.sort(function(a, b) {let textA = a.name.toUpperCase(); let textB = b.name.toUpperCase(); return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;});
+                        for job in jobs
+                            option(value=job.id)  #{job.name}
+    hr(style='height:5px;')
+    h1 Personnel Availability
+    form(method='POST' action='')
+        div.row.mt-2
+            div.col-sm-4
+                label(for='startDate') Start Date:  
+                input#startDate.form-control(
+                    name='startDate'
+                    type='date' 
+                    required='true')
+            div.col-sm-4
+                label(for='endDate') End Date:  
+                input#endDate.form-control(
+                    name='endDate'
+                    type='date' 
+                    required='true') 
+        div.row.mt-2
+            div.col-sm-4
+                    button.btn.btn-primary(type='submit' name='person_avail_all') All Personnel
+            div.col-sm-4 
+                    button.btn.btn-primary(type='submit' name='person_avail_org') For an Organization
+                    br
+                    label(for='org') Organization:  
+                    select#orgtask.form-control(type='select' placeholder='Select organization' name='orgpersonavail' required='false' )
+                        - orgs.sort(function(a, b) {let textA = a.name.toUpperCase(); let textB = b.name.toUpperCase(); return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;});
+                        for org in orgs
+                            option(value=org.id)  #{org.name}
+            div.col-sm-4
+                    button.btn.btn-primary(type='submit' name='person_avail_job') For a Person
+                    br
+                    label(for='job') Job:  
+                    select#jobtask.form-control(type='select' placeholder='Select job' name='jobpersonavail' required='false' )
                         - jobs.sort(function(a, b) {let textA = a.name.toUpperCase(); let textB = b.name.toUpperCase(); return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;});
                         for job in jobs
                             option(value=job.id)  #{job.name}
