@@ -121,73 +121,202 @@ exports.report_task_all = function (req,res,next, now) {
 
 exports.report_task_org = function (req,res,next, now) {
         
-    Organization.findById(req.body.orgtask).exec(function (err, org) {
+    async.parallel ({
+        // organizations
+        org: function (callback) {
+            Organization.findById(req.body.orgtask).sort('name').exec(callback);},
+        // persons
+        persons: function (callback) {
+            Person.find({'organization': req.body.orgtask}).sort('name').exec(callback);},
+        // jobs
+        jobs: function (callback) {
+            Job.find({'organization': req.body.orgtask}).sort('name').exec(callback);},
+        // tasks
+        tasks: function (callback) {
+            Task.find({}).populate('roles').populate('persons').sort('startDate').exec(callback);},
+        leaves: function (callback) {
+            Leave.find({}).exec(callback);},
+        person_trainings: function (callback) {
+            Person_Training.find({}).exec(callback);},
+        roles: function (callback) {
+            Role.find({}).populate('trainings').exec(callback);},
+    }, function (err, results) {
         if (err) { return next(err); }
-        Job.find({'organization':req.body.orgtask}).sort('name').exec(function(err, jobs) {
-            if (err) { return next(err); }
-            Task.find({'job':jobs}).sort('startDate').populate('roles').populate('persons').exec(function(err,tasks) {
-                if (err) { return next(err); }
 
-                // the report goes by job, task
-                var report_data = [];
-                report_data.push ({org: org, job_data: []});
-                for (let i = 0; i < jobs.length; i++) {
-                    report_data[0].job_data.push({
-                        job: jobs[i],
-                        task_data:[]
-                    });
-                    for (let j = 0; j < tasks.length; j++) {
-
-                        // match the task to this job record
-                        if (jobs[i]._id.toString() == tasks[j].job.toString()) {
-                            report_data[0].job_data[i].task_data.push({
-                                task: tasks[j], 
-                                available: false,
-                                qualified: false
-                            });
-                        }
-                    }
-                }
-
-                // render the report
-                res.render('report_task_records', { 
-                    title: 'Tasks for One Organization', 
-                    dateTime: now,
-                    report_data: report_data,
-                });
-
-            });
+        // the report goes by each organization, job, task
+        let report_data = [];
+        report_data.push({
+            org: results.org,
+            job_data:[]
         });
-    });
 
+        let nJobs = 0;
+        for (let j = 0; j < results.jobs.length; j++) {
+            let job = results.jobs[j];
+            report_data[0].job_data.push({
+                job: job, 
+                task_data:[]
+            });
+
+            // get the matching task records
+
+            for (let k = 0; k < results.tasks.length; k++) {
+                const task = results.tasks[k];
+
+                // select the tasks for this job
+                if (job._id.toString() == task.job._id.toString()){
+
+                    // go through all of the role/person pairs
+                    let roleData = []
+                    roleData.length = task.roles.length;
+                    for (let l = 0; l < task.roles.length; l++){
+                        const taskRole = results.tasks[k].roles[l];
+                        const taskPerson = results.tasks[k].persons[l];
+
+                        // find the role that matches this one
+                        for (let m = 0; m < results.roles.length; m++) {
+                            const scanRole = results.roles[m];
+
+                            if (scanRole.id.toString() == taskRole.id.toString()) {
+
+                                // find the person for this role
+                                for (let n = 0; n < results.persons.length; n++){
+                                    const scanPerson = results.persons[n];
+                                    if (scanPerson.id.toString() == 
+                                        taskPerson.id.toString()) {
+
+                                        // get the person avaiability and qaulifications
+                                        const availability = helpers.Availability(
+                                            task.startDate_formatted, 
+                                            task.endDate_formatted, 
+                                            task.id, 
+                                            taskPerson.id, 
+                                            results.leaves, 
+                                            results.tasks);
+                                        const qualification= helpers.Qualification(
+                                            task.endDate, 
+                                            scanRole.trainings, 
+                                            results.person_trainings, 
+                                            taskPerson.id);
+                                        roleData[l] = {
+                                                person: taskPerson,
+                                                role: taskRole,
+                                                qualification: qualification,
+                                                availability: availability}
+                                    }
+                                }
+                            }
+                        }
+                        
+                    }
+                    report_data[0].job_data[nJobs].task_data.push({
+                        task: results.tasks[k],
+                        roleData: roleData,
+                    });
+                    nJobs++;
+                }
+            }
+        }
+        // render the report
+        res.render('report_task_records', { 
+            title: 'All Tasks for an Organization', 
+            dateTime: now,
+            report_data: report_data,});
+    });
 }
 exports.report_task_job = function (req,res,next, now) {
-    Job.findById(req.body.jobtask).populate('organization').exec(function(err, job) {
+    async.parallel ({
+        // job
+        job: function (callback) {
+            Job.findById(req.body.jobtask).sort('name').populate('organization').exec(callback);},
+        // persons
+        persons: function (callback) {
+            Person.find({}).sort('name').exec(callback);},
+        // tasks
+        tasks: function (callback) {
+            Task.find({}).populate('roles').populate('persons').sort('startDate').exec(callback);},
+        leaves: function (callback) {
+            Leave.find({}).exec(callback);},
+        person_trainings: function (callback) {
+            Person_Training.find({}).exec(callback);},
+        roles: function (callback) {
+            Role.find({}).populate('trainings').exec(callback);},
+    }, function (err, results) {
         if (err) { return next(err); }
-        Task.find({'job':job}).sort('startDate').populate('roles').populate('persons').exec(function(err,tasks) {
-            if (err) { return next(err); }
 
-            // the report goes by job, task
-            var report_data = [];
-            report_data.push ({org: job.organization, job_data: []});
-            report_data[0].job_data.push({
-                job: job,
+        let report_data = [];
+        report_data.push({
+            org: results.job.organization,
+            job_data:[]
+        });
+
+        const job = results.job;
+        report_data[0].job_data.push({
+                job: job, 
                 task_data:[]
-                });
-            for (let j = 0; j < tasks.length; j++) {
+        });
+
+        // get the matching task records
+
+        for (let k = 0; k < results.tasks.length; k++) {
+            const task = results.tasks[k];
+
+            // select the tasks for this job
+            if (job._id.toString() == task.job._id.toString()){
+
+                // go through all of the role/person pairs
+                let roleData = []
+                roleData.length = task.roles.length;
+                for (let l = 0; l < task.roles.length; l++){
+                    const taskRole = results.tasks[k].roles[l];
+                    const taskPerson = results.tasks[k].persons[l];
+
+                    // find the role that matches this one
+                    for (let m = 0; m < results.roles.length; m++) {
+                        const scanRole = results.roles[m];
+
+                        if (scanRole.id.toString() == taskRole.id.toString()) {
+
+                            // find the person for this role
+                            for (let n = 0; n < results.persons.length; n++){
+                                const scanPerson = results.persons[n];
+                                if (scanPerson.id.toString() == 
+                                    taskPerson.id.toString()) {
+
+                                    // get the person avaiability and qaulifications
+                                    const availability = helpers.Availability(
+                                        task.startDate_formatted, 
+                                        task.endDate_formatted, 
+                                        task.id, 
+                                        taskPerson.id, 
+                                        results.leaves, 
+                                        results.tasks);
+                                    const qualification= helpers.Qualification(
+                                        task.endDate, 
+                                        scanRole.trainings, 
+                                        results.person_trainings, 
+                                        taskPerson.id);
+                                    roleData[l] = {
+                                            person: taskPerson,
+                                            role: taskRole,
+                                            qualification: qualification,
+                                            availability: availability}
+                                }
+                            }
+                        }
+                    }
+                    
+                }
                 report_data[0].job_data[0].task_data.push({
-                    task: tasks[j], 
-                    available: false,
-                    qualified: false
+                    task: results.tasks[k],
+                    roleData: roleData,
                 });
             }
-
-            // render the report
-            res.render('report_task_records', { 
-                title: 'Tasks for One Job', 
-                dateTime: now,
-                report_data: report_data,
-            });
-        });
+        }
+        // render the report
+        res.render('report_task_records', { 
+            title: 'All Tasks for a Job', 
+            dateTime: now,
+            report_data: report_data,});
     });
 }

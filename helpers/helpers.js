@@ -1,7 +1,6 @@
 var express = require('express');
 //some helper functions
 // Availability - check all of the leaves to see if any of them overlap with the start and end dates
-//TODO check other tasks that the person might be assigned to
 exports.Availability = function(startDate, endDate, taskId, personId, leaves, tasks) {
 
     var result = {available: true, reasons: []};
@@ -55,7 +54,6 @@ exports.Qualification = function(endDate, role_trainings, person_trainings, pers
             // skip if this training is not for the person being processed
             if (role_training._id.toString() == person_training.training._id.toString() && 
                 person.toString() == person_training.person._id.toString()) {
-                console.log('in qualification, training match: role training' + role_training.name + ' person: ' + person.toString());
                 if (person_training.expirationDate && person_training.expirationDate <= endDate){
                     result.reasons.push ("Training '"+person_training.training.name+
                         "' expires on "+person_training.expirationDate_formatted+
