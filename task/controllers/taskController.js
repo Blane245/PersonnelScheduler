@@ -278,7 +278,6 @@ exports.task_assign_get =  function (req, res, next) {
                                         var personName = orgPersons[iperson].fullName;
                                         var personId = orgPersons[iperson].id;
                                         
-                                        //TODO check other tasks to see if the person is assigned to another task #
                                         var availability = helpers.Availability(task.startDate_formatted, task.endDate_formatted, task.id, orgPersons[iperson].id, leaves, tasks);
                                         var qualification= helpers.Qualification(task.endDate, roleTrainings, person_trainings, orgPersons[iperson].id);
 
@@ -300,7 +299,6 @@ exports.task_assign_get =  function (req, res, next) {
                                         persons: personData
                                     });
                                 }
-                                // TODO add popup to view reasons for quals and avails 
                                 // ready to display the task assignment page
                                 res.render('task_assignment_form', { 
                                     title: "Assign Personnel for Task '" + task.name + "' of Job '" + job.name + "'",

@@ -60,6 +60,7 @@ exports.Qualification = function(endDate, role_trainings, person_trainings, pers
                         "' expires on "+person_training.expirationDate_formatted+
                         " pror to the task's end date");
                     result.qualified = false;
+                }
             }
         }
     }

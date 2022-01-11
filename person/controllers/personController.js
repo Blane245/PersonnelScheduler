@@ -6,6 +6,7 @@ var Training = require('../../models/training');
 var Person_Training = require('../../models/person_training');
 const { body, validationResult } = require('express-validator');
 var async = require('async');
+const { exists } = require('../../models/organization');
 
 exports.organization_person_list = function (req, res, next) {
     async.parallel ({
@@ -141,7 +142,7 @@ exports.person_modify_post = [
     // process request after validation and sanitization
     (req, res, next) => {
 
-        const errors = validationResult(req).array();
+        var errors = validationResult(req).array();
 
         // check for another person with the same amail address
         Person.find({'email': req.body.email}).exec (function (err, persons) {
@@ -274,10 +275,29 @@ exports.person_leave_create_post = [
     }),
 
     // save the new leave
-    (req, res, next) => {
+    async (req, res, next) => {
 
         // Extract the validation errors from the request
         var errors = validationResult (req).array();
+
+        // check if this new leave overlaps any existing leave
+        let leaves;
+        try {
+            leaves = await Leave.find({'person': req.params.id});
+        } catch (err) {
+            return next(err);
+        }
+
+        for (let i = 0; i < leaves.length; i++) {
+            const leave = leaves[i];
+            if ((leave.startDate_formatted < req.body.startDate && leave.endDate_formatted >= req.body.startDate) ||
+                (leave.startDate_formatted >= req.body.startDate && req.body.endDate == '') ||
+                (leave.startDate_formatted >= req.body.startDate && leave.startDate_formatted == '') ||
+                (leave.startDate_formatted >= req.body.startDate && leave.startDate_formatted <= req.body.endDate)) {
+                errors.push({msg: 'This leave overlaps another leave for this person.'});
+                break;
+            }
+        }
 
         // create a new leave record from the vlaidiated and sanitixed data.
         var newLeave = new Leave ( {
@@ -344,44 +364,67 @@ exports.person_leave_modify_post = [
     body('duration', '').escape(),
 
     // process request after validation and sanittzation
-    (req, res, next) => {
+    async (req, res, next) => {
 
-        const errors = validationResult(req);
+        var errors = validationResult(req).array();
+
+        // check if this new leave overlaps any existing leave
+        let leaves;
+        try {
+            leaves = await Leave.find({'person': req.params.id});
+        } catch (err) {
+            return next(err);
+        }
+
+        for (let i = 0; i < leaves.length; i++) {
+            const leave = leaves[i];
+            if (leave.id.toString() != req.params.leaveid.toString()) {
+                if ((leave.startDate_formatted < req.body.startDate && leave.endDate_formatted >= req.body.startDate) ||
+                    (leave.startDate_formatted >= req.body.startDate && req.body.endDate == '') ||
+                    (leave.startDate_formatted >= req.body.startDate && leave.startDate_formatted == '') ||
+                    (leave.startDate_formatted >= req.body.startDate && leave.startDate_formatted <= req.body.endDate)) {
+                    errors.push({msg: 'This leave overlaps another leave for this person.'});
+                    break;
+                }
+            }
+        }
 
         // reload the person record to retrieve the organization
-        Leave.findById(req.params.leaveid).populate('person').exec(function(err, leave) {
-            if (err) { return next(err); }
-            if (leave==null) {
-                var err = new Error('Leave not found');
-                err.status = 404;
-                return next(err);
-            }
-            var newLeave = new Leave (
-                { Name: req.body.Name,
-                    startDate: req.body.startDate,
-                    endDate: req.body.endDate,
-                    duration: req.body.duration,
-                    person: leave.person,
-                    _id: req.params.leaveid
-                });
-        
-            if (!errors.isEmpty()) {
-                res.render('leave_form', {
-                    title: "Modify leave for Person '" + leave.person.fullName ,
-                    leave: newLeave,
-                    person: newLeave.person,
-                    errors: errors.array() });
-            } else {
-                // data is valid. update the record
-                Leave.findByIdAndUpdate(req.params.leaveid, newLeave, {}, function (err) {
-                    if (err) { return next(err); }
+        let oldLeave;
+        try {
+            oldLeave = await Leave.findById(req.params.leaveid).populate('person');
+        } catch (err) {
+            return next(err);
+        }
 
-                    // redirect to the person's orignal organization
-                    res.redirect ('/persons/person/'+leave.person.id+'/leave');
+        if (oldLeave==null) {
+            errors.push({msg: 'Leave not found.'});
+        }
 
-                });
-            }
-        });
+        var newLeave = new Leave (
+            { name: req.body.name,
+                startDate: req.body.startDate,
+                endDate: req.body.endDate,
+                person: oldLeave.person,
+                _id: req.params.leaveid
+            });
+    
+        if (errors.length != 0) {
+            res.render('leave_form', {
+                title: "Modify leave for Person '" + oldLeave.person.fullName ,
+                leave: newLeave,
+                person: newLeave.person,
+                errors: errors });
+        } else {
+            // data is valid. update the record
+            Leave.findByIdAndUpdate(req.params.leaveid, newLeave, {}, function (err) {
+                if (err) { return next(err); }
+
+                // redirect to the person's orignal organization
+                res.redirect ('/persons/person/'+req.params.id+'/leave');
+
+            });
+        }
     }
 
 ]
