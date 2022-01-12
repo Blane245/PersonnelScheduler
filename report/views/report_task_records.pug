@@ -15,15 +15,15 @@ block content
                 thead.thead-dark 
                     tr 
                         th.text-left(scope='col') Name 
-                        th.text-left(scope='col') Start Date
-                        th.text-left(scope='col') End Date 
+                        th.text-left(scope='col') Start Date/Time
+                        th.text-left(scope='col') End Date/Time 
                         th.text-center(scope='col') Role/Person 
                 tbody 
                     for task_item in job_item.task_data
                         tr 
                             td(class='text-left')= task_item.task.name
-                            td(class='text-left')= task_item.task.startDate_formatted
-                            td(class='text-left')= task_item.task.endDate_formatted
+                            td(class='text-left')= task_item.task.startDateTime_formatted
+                            td(class='text-left')= task_item.task.endDateTime_formatted
                             td(class='text-left')
                                 table(class='table')
                                     thead

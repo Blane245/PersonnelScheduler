@@ -69,10 +69,10 @@ exports.task_create_post = [
     // validate and sanitize fields
     body('name', 'Name must not be empty.').trim().isLength({min: 1}),
     body('description', '').trim(),
-    body('startDate', 'Start Date must be a valid date.').isISO8601(),
-    body('endDate', 'End Date must be a valid date.').isISO8601()
+    body('startDateTime', 'Start Date must be a valid date.').exists().not().isEmpty(),
+    body('endDateTime', 'End Date must be a valid date.').exists().not().isEmpty()
     .custom((value, { req }) => {
-        if (value < req.body.startDate) {
+        if (value < req.body.startDateTime) {
             throw new Error('End Date must be greater than or equal to Start Date.');
         }
         return true;
@@ -103,8 +103,8 @@ exports.task_create_post = [
                 var task = new Task ( 
                     { name: req.body.name,
                         description: req.body.description,
-                        startDate: req.body.startDate,
-                        endDate: req.body.endDate,
+                        startDateTime: req.body.startDateTime,
+                        endDateTime: req.body.endDateTime,
                         roles: job.role,
                         persons: persons,
                         job: job
@@ -159,11 +159,11 @@ exports.task_modify_get = function(req, res, next) {
 exports.task_modify_post = [
     // validate and sanitze fields.
     body('name', 'Name must not be empty.').trim().isLength({min: 1}),
-    body('startDate', 'Start date must be a valid date.').isISO8601(),
+    body('startDateTime', 'Start date must be a valid date.').isISO8601(),
     body('description', '').trim(),
-    body('endDate', 'End Date must be a valid date.').isISO8601()
+    body('endDateTime', 'End Date must be a valid date.').isISO8601()
     .custom((value, { req }) => {
-        if (value < req.body.startDate) {
+        if (value < req.body.startDateTime) {
             throw new Error('End Date must be greater than or equal to Start Date.');
         }
         return true;
@@ -188,8 +188,8 @@ exports.task_modify_post = [
                 var newTask = new Task (
                     { name: req.body.name,
                     description: req.body.description,
-                    startDate: req.body.startDate,
-                    endDate: req.body.endDate,
+                    startDateTime: req.body.startDateTime,
+                    endDateTime: req.body.endDateTime,
                     job: task.job.id,
                     persons: task.persons,
                     roles: task.roles,
@@ -278,8 +278,8 @@ exports.task_assign_get =  function (req, res, next) {
                                         var personName = orgPersons[iperson].fullName;
                                         var personId = orgPersons[iperson].id;
                                         
-                                        var availability = helpers.Availability(task.startDate_formatted, task.endDate_formatted, task.id, orgPersons[iperson].id, leaves, tasks);
-                                        var qualification= helpers.Qualification(task.endDate, roleTrainings, person_trainings, orgPersons[iperson].id);
+                                        var availability = helpers.Availability(task.startDateTime_formatted, task.endDateTime_formatted, task.id, orgPersons[iperson].id, leaves, tasks);
+                                        var qualification= helpers.Qualification(task.endDateTime_formatted, roleTrainings, person_trainings, orgPersons[iperson].id);
 
                                         // see if the person is currently selected
                                         var selected = isSelected (irole, taskPersons, orgPersons[iperson]);
@@ -351,8 +351,8 @@ exports.task_assign_post =  function (req, res, next) {
         newTask = new Task ({
             name: task.name,
             description: task.description,
-            startDate: task.startDate,
-            endDate: task.endDate,
+            startDateTime: task.startDateTime,
+            endDateTime: task.endDateTime,
             job: task.job,
             roles: task.roles,
             _id: task.id

@@ -8,14 +8,14 @@ block content
     a(href='/jobs/'+job.organization)
         button.btn.btn-primary(type='button') Return to Job List
     if tasks.length != 0
-        - tasks.sort(function(a, b) {let textA = a.startDate_formatted; let textB = b.startDate_formatted; return (textA > textB) ? -1 : (textA < textB) ? 1 : 0;});
+        - tasks.sort(function(a, b) {let textA = a.startDateTime_formatted; let textB = b.startDateTime_formatted; return (textA > textB) ? -1 : (textA < textB) ? 1 : 0;});
         table(class='table' id='job-table')
             thread 
                 tr 
                 th(class='text-left' scope='col') Name 
                 th(class='text-left' scope='col') Description 
-                th(class='text-left' scope='col') Start Date 
-                th(class='text-left' scope='col') End Date
+                th(class='text-left' scope='col') Start Date/Time 
+                th(class='text-left' scope='col') End Date/Time
                 th(class='text-center' scope='col') Assignments
                 th(class='text-center' scope='col') Modify
                 th(class='text-center' scope='col') Delete
@@ -25,8 +25,8 @@ block content
                     tr 
                         td(class='text-left') #{task.name}
                         td(class='text-left') #{task.description}
-                        td(class='text-left') #{task.startDate_formatted}
-                        td(class='text-left') #{task.endDate_formatted}
+                        td(class='text-left') #{task.startDateTime_formatted}
+                        td(class='text-left') #{task.endDateTime_formatted}
                         td(class='text-center')
                             a(href='/tasks/job/' +job.id+'/task/'+task.id+'/assign')
                                 button.btn.btn-small.btn-dark(type='button')

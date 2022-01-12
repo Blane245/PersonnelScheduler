@@ -78,14 +78,14 @@ exports.report_task_all = function (req,res,next, now) {
 
                                                 // get the person avaiability and qaulifications
                                                 var availability = helpers.Availability(
-                                                    task.startDate_formatted, 
-                                                    task.endDate_formatted, 
+                                                    task.startDateTime_formatted, 
+                                                    task.endDateTime_formatted, 
                                                     task.id, 
                                                     taskPerson.id, 
                                                     results.leaves, 
                                                     results.tasks);
                                                 var qualification= helpers.Qualification(
-                                                    task.endDate, 
+                                                    task.endDateTime_formatted, 
                                                     scanRole.trainings, 
                                                     results.person_trainings, 
                                                     taskPerson.id);
@@ -187,14 +187,14 @@ exports.report_task_org = function (req,res,next, now) {
 
                                         // get the person avaiability and qaulifications
                                         const availability = helpers.Availability(
-                                            task.startDate_formatted, 
-                                            task.endDate_formatted, 
+                                            task.startDateTime_formatted, 
+                                            task.endDateTime_formatted, 
                                             task.id, 
                                             taskPerson.id, 
                                             results.leaves, 
                                             results.tasks);
                                         const qualification= helpers.Qualification(
-                                            task.endDate, 
+                                            task.endDateTime_formatted, 
                                             scanRole.trainings, 
                                             results.person_trainings, 
                                             taskPerson.id);
@@ -285,14 +285,14 @@ exports.report_task_job = function (req,res,next, now) {
 
                                     // get the person avaiability and qaulifications
                                     const availability = helpers.Availability(
-                                        task.startDate_formatted, 
-                                        task.endDate_formatted, 
+                                        task.startDateTime_formatted, 
+                                        task.endDateTime_formatted, 
                                         task.id, 
                                         taskPerson.id, 
                                         results.leaves, 
                                         results.tasks);
                                     const qualification= helpers.Qualification(
-                                        task.endDate, 
+                                        task.endDateTime_formatted, 
                                         scanRole.trainings, 
                                         results.person_trainings, 
                                         taskPerson.id);

@@ -16,23 +16,22 @@ block content
                 name='description'
                 type='text' 
                 placeholder='Task description'
-                required='true' 
+                required='true'
                 value=(undefined===task ? '' : task.description))        
             div(class='row')
                 div(class='col-sm-4')
-                    label(for='startDate') Start Date: 
-                    input#startDate.form-control(
-                        name='startDate'
-                        type='date' 
-                        required='true' 
-                        value=(undefined===task ? '' : task.startDate_formatted))        
+                    label(for='startDateTime') Start Date/Time (UTC): 
+                    input#startDateTime.form-control(
+                        name='startDateTime'
+                        type='datetime-local' 
+                        required='true' value=(undefined===task ? '' : task.startDateTime_formatted))        
                 div(class='col-sm-4')
-                    label(for='endDate') End Date: 
-                    input#endDate.form-control(
-                        name='endDate'
-                        type='date' 
-                        required='true' 
-                        value=(undefined===task ? '' : task.endDate_formatted))        
+                    label(for='endDateTime') End Date/Time (UTC): 
+                    input#endDateTime.form-control(
+                        name='endDateTime'
+                        type='datetime-local' 
+                        required='true'
+                        value=(undefined===task ? '' : task.endDateTime_formatted))        
         button.btn.btn-primary(type='submit' name='save' value='save') Save
         p
         button.btn.btn-primary(type='submit' name='assign' value='assign') Save and Make Role Assignments

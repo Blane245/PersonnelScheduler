@@ -18,11 +18,19 @@ Person_TrainingSchema
   .get(function() {
     return '/organizations/person_training/' + this._id;
   });
-Person_TrainingSchema
-.virtual('expirationDate_formatted')
+  Person_TrainingSchema
+  .virtual('expirationDate_formatted')
+  .get(function() {
+    if (this.expirationDate)
+      return DateTime.fromJSDate(this.expirationDate, {zone:'UTC'}).toFormat('yyyy-MM-dd');
+    else
+      return "";
+  });
+  Person_TrainingSchema
+.virtual('expirationDate_formatted_extend')
 .get(function() {
   if (this.expirationDate)
-    return DateTime.fromJSDate(this.expirationDate, {zone:'UTC'}).toFormat('yyyy-MM-dd');
+    return DateTime.fromJSDate(this.expirationDate, {zone:'UTC'}).toFormat('yyyy-MM-ddT00:00:00');
   else
     return "";
 });

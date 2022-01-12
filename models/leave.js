@@ -19,7 +19,7 @@ LeaveSchema
     return '/leave/' + this._id;
   });
 
-LeaveSchema
+  LeaveSchema
   .virtual('startDate_formatted')
   .get(function() {
     return DateTime.fromJSDate(this.startDate, {zone:'UTC'}).toFormat('yyyy-MM-dd');
@@ -31,5 +31,18 @@ LeaveSchema
     return '';
   else
     return DateTime.fromJSDate(this.endDate, {zone:'UTC'}).toFormat('yyyy-MM-dd');
+});
+LeaveSchema
+  .virtual('startDate_formatted_extend')
+  .get(function() {
+    return DateTime.fromJSDate(this.startDate, {zone:'UTC'}).toFormat('yyyy-MM-ddT00:00:00');
+  });
+LeaveSchema
+.virtual('endDate_formatted_extend')
+.get(function() {
+  if (this.endDate == null)
+    return '';
+  else
+    return DateTime.fromJSDate(this.endDate, {zone:'UTC'}).toFormat('yyyy-MM-ddT00:00:00');
 });
 module.exports = mongoose.model('Leave', LeaveSchema);
