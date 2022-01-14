@@ -31,7 +31,7 @@ block content
                             td
                                 - var s = 'text-dark'
                                 - var t
-                                select.form-control(type='select', placeholder='Select person' id=role.id name=roleTag required='true' onchange='changePerson(event)')
+                                select.form-control(type='select', placeholder='Select person' id=roleTag name=roleTag required='true' onchange='changePerson(event)')
                                     option(value='') --- Select Person for Role ---
                                     - var selectedPerson = 0; 
                                     for person in role.persons 
@@ -53,9 +53,9 @@ block content
                                         else
                                             option(value=person.id class=s) #{t}
                             td(class='text-center')
-                                button.btn.btn-small.btn-dark(type='button' id='avail-r'+role.id data-toggle='modal' data-target='#avail-r'+role.id+'p'+selectedPerson)
+                                button.btn.btn-small.btn-dark(type='button' id='avail-'+roleTag data-toggle='modal' data-target='#avail-'+roleTag+'p'+selectedPerson)
                             td(class='text-center')
-                                button.btn.btn-small.btn-dark(type='button' id='qual-r'+role.id data-toggle='modal' data-target='#qual-r'+role.id+'p'+selectedPerson)
+                                button.btn.btn-small.btn-dark(type='button' id='qual-'+roleTag data-toggle='modal' data-target='#qual-'+roleTag+'p'+selectedPerson)
                             - irole++
         button.btn.btn-primary(type='submit' name='save' value='save' onclick='checkDuplicates(event)') Save
         p 
@@ -70,11 +70,10 @@ block content
         function checkDuplicates(event) {
             var nRoles =  #{roles.length};
             var personIDs = [];
-            var roleNames = [];
+            var roleTags = [];
             for (let i = 0; i < nRoles; i++) {
-                roleNames[i] = 'Role' + i;
-                personIDs[i] = document.getElementById(roleNames[i]).value;
-                console.log(personIDs[i]);
+                roleTags[i] = 'Role' + i;
+                personIDs[i] = document.getElementById(roleTags[i]).value;
             }
             var nErrors = 0;
             document.getElementById('validationErrors').innerHTML = '';
@@ -84,7 +83,7 @@ block content
                         if (personIDs[i] == personIDs[j]) {
                         document.getElementById('validationErrors').innerHTML =  
                                 document.getElementById('validationErrors').innerHTML + 
-                                '<br> The same person is assignd to ' + roleNames[i] + ' and ' + roleNames[j] + '. ';
+                                '<br> The same person is assignd to positions ' + (i+1) + ' and ' + (j+1) + '. ';
                             nErrors++;
                         }
                     }
@@ -97,19 +96,21 @@ block content
         // switch the avaiability and qualification buttons for the role person just changed
         function changePerson(event) {
 
-            var roleID = event.currentTarget.id; //- role.id
-            var personID = event.currentTarget.options[event.currentTarget.selectedIndex].value; // - person.id
-            var dataTarget = 'r'+roleID+'p'+personID;
-            var availButton = document.getElementById('avail-r'+roleID); //- available button
-            var qualButton = document.getElementById('qual-r'+roleID); //- available button
+            let roleTag = event.currentTarget.id;
+            let personID = event.currentTarget.options[event.currentTarget.selectedIndex].value; // - person.id
+            let dataTarget = roleTag+'p'+personID;
+            let availButton = document.getElementById('avail-'+roleTag); //- available button
+            let qualButton = document.getElementById('qual-'+roleTag); //- available button
             availButton.dataset.target='#avail-'+dataTarget;
             qualButton.dataset.target='#qual-'+dataTarget;
 
         }
     //- build the qualification and availability modals 
+    - var iRole = 0
     for role in roles
+        -var roleTag = 'Role' + iRole
         for person in role.persons
-            div(class='modal fade modal-lx' id='avail-r'+role.id+'p'+person.id aria-labelby=id='avail-r'+role.id+'p'+person.id tabindex='-1' role='dialog' aria-hidden='true')
+            div(class='modal fade modal-lx' id='avail-'+roleTag+'p'+person.id aria-labelby=id='avail-r'+roleTag+'p'+person.id tabindex='-1' role='dialog' aria-hidden='true')
                 div.modal-dialog(role='document')
                     div.modal-content(role='document')
                         div.modal-header
@@ -124,7 +125,7 @@ block content
                                 p There are no exceptions. Person is available
                         div.modal-footer
                             button.btn.btn-primary(type='button' data-dismiss='modal') OK 
-            div(class='modal fade modal-lx' id='qual-r'+role.id+'p'+person.id aria-labelby=id='qual-r'+role.id+'p'+person.id tabindex='-1' role='dialog' aria-hidden='true')
+            div(class='modal fade modal-lx' id='qual-'+roleTag+'p'+person.id aria-labelby=id='qual-r'+role.id+'p'+person.id tabindex='-1' role='dialog' aria-hidden='true')
                 div.modal-dialog(role='document')
                     div.modal-content(role='document')
                         div.modal-header
@@ -139,3 +140,4 @@ block content
                                 p There are no exceptions. Person is qualified
                         div.modal-footer
                             button.btn.btn-primary(type='button' data-dismiss='modal') OK
+        - iRole++

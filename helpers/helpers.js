@@ -52,7 +52,7 @@ exports.Availability = function(startDateTime, endDateTime, taskId, personId, le
     return result;
 
 }
-//TODO blah #
+
 // isQualified - for a person to be qualified, all of their role's required training
 // record must not expire before the end date of the task
 exports.Qualification = function(endDateTime, role_trainings, person_trainings, person) {

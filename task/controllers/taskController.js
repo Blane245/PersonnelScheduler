@@ -1,13 +1,8 @@
 const { body, validationResult } = require('express-validator');
 var async = require('async');
 const Person = require('../../models/person');
-const Leave = require('../../models/leave');
-const Person_Training = require('../../models/person_training');
 const Job = require('../../models/job');
-const Role = require('../../models/role');
 const Task = require('../../models/task');
-const Training = require('../../models/training');
-const helpers = require('../../helpers/helpers')
 
 // this controller does the heavy lifting of the Personnel Scheduling app
 // Tasks are what people do. In here are the CRUD controller for tasks
@@ -80,79 +75,83 @@ exports.task_create_post = [
     // prevent a new job from having the same name as a current one
 
     // save the new task unless it has the same name as another task for this job
-    (req, res, next) => {
+    async (req, res, next) => {
+
 
         // Extract the validation errors from a request.
         var errors = validationResult(req).array();
 
         // get the job that this tasks belongs to
-        Job.findById(req.params.id).exec(function(err, job) {
-            if (err) { return next(err);}
+        let job = null;
+        try {
+            job = await Job.findById(req.params.id);
+        } catch (error) {
+            if (error) return(next(error));
+        }
 
-            // check for duplicate task in this job
-            Task.findOne({'name': req.body.name, 'job': req.params.id}).exec (function (err, task) {
-                if (err) { return next(err)};
-                if (task) {
-                    errors.push({msg: 'A task with this name already exist for this job.'});
-                }
+        // check for duplicate task in this job
+        let dupTask = null;
+        try {
+            dupTask = await Task.findOne({'name': req.body.name, 'job': req.params.id});
+        } catch (error) {
+            if (error) return(next(error));
+        }
+        if (dupTask) {
+            errors.push({msg: 'A task with this name already exist for this job.'});
+        }
 
-                // create an task object with escaped and trimmed data
-                var persons = [];
-                for (let i = 0; i < job.role.length; i++)
-                    persons[i] = new Person();
-                var task = new Task ( 
-                    { name: req.body.name,
-                        description: req.body.description,
-                        startDateTime: req.body.startDateTime,
-                        endDateTime: req.body.endDateTime,
-                        roles: job.role,
-                        persons: persons,
-                        job: job
-                    });
-            
-                if (errors.length !=0) {
-                    res.render('task_form', {
-                        title: "Create Task for Job '" + job.name + "'", 
-                        task: task,
-                        job: job,
-                        errors: errors });
-                } else {
-                    
-                    // data is valid and sanitized. save it
-                    task.save(function (err) {
-                        if (err) { return next (err);}
-                        req.params.taskid = task._id;
+        // create an task object with escaped and trimmed data
+        var persons = [];
+        for (let i = 0; i < job.role.length; i++)
+            persons[i] = new Person();
+        var task = new Task ( 
+            { name: req.body.name,
+                description: req.body.description,
+                startDateTime: req.body.startDateTime,
+                endDateTime: req.body.endDateTime,
+                roles: job.role,
+                persons: persons,
+                job: job
+            });
+    
+        if (errors.length !=0) {
+            res.render('task_form', {
+                title: "Create Task for Job '" + job.name + "'", 
+                task: task,
+                job: job,
+                errors: errors });
+        } else {
+                
+            // data is valid and sanitized. save it
+            task.save(function (err) {
+                if (err) { return next (err);}
 
-                        // if the assign button was pressed, then do the role assignment activity
-                        // otherwise go back to the task list
-                        if (req.body.assign == null)
-                            res.redirect('/jobs/job/'+req.params.id+'/tasks/');
-                        else {
-                            res.redirect('/tasks/job/'+req.params.id+'/task/'+req.params.taskid+'/assign');
-                        }
-                    });
+                // if the assign button was pressed, then do the role assignment activity
+                // otherwise go back to the task list
+                req.params.taskid = task._id;
+                if (req.body.assign == null)
+                    res.redirect('/jobs/job/'+req.params.id+'/tasks/');
+                else {
+                    res.redirect('/tasks/job/'+req.params.id+'/task/'+req.params.taskid+'/assign');
                 }
             });
-        });
+        }
     }
 ]
 
 // Display training modify form on GET.
-exports.task_modify_get = function(req, res, next) {
-    async.parallel(
-        {
-            task: function(callback) {
-                Task.findById(req.params.taskid).populate('job').exec(callback);
-            },
-        }, 
-        function(err, results) {
-            if (err) { return next(err); }
-            res.render('task_form', { 
-                title: "Modify task '" + results.task.name + "' for job '"+results.task.job.name+"'", 
-                job: results.task.job,
-                task: results.task});    
-        }
-    );
+exports.task_modify_get = async function(req, res, next) {
+
+    let task = null;
+    try {
+        task = await Task.findById(req.params.taskid).populate('job');
+    } catch (error) {
+        if (error) return(next(error));
+    }
+    res.render('task_form', { 
+        title: "Modify task '" + task.name + "' for job '"+task.job.name+"'", 
+        job: task.job,
+        task: task});    
 
 };
 
@@ -170,219 +169,68 @@ exports.task_modify_post = [
     }),
 
     // process request after validation and sanittzation
-    (req, res, next) => {
+    async (req, res, next) => {
         var errors = validationResult(req).array();
 
         // get the existing task record for modification
-        Task.findById(req.params.taskid).populate('job').exec(function (err, task) {
-            if (err) { next(err);}
-            // check if there is another task with this name in the job
-            Task.findOne({'name': req.body.name, 'job': task.job})
-                .exec (function (err, anotherTask) {
-                if (err) {return next(err);}
-                if (anotherTask && anotherTask.id != task.id) {
-                    errors.push ({msg:'Another task with this name exists in the job'});
-                }
+        let task = null;
+        try {
+            task = await Task.findById(req.params.taskid).populate('job');
+        } catch (error) {
+            if (error) return(next(error));
+        }
+
+        // check for duplicate
+        let dupTask = null;
+        try {
+            dupTask = await Task.findOne({'name': req.body.name, 'job': task.job});
+        } catch (error) {
+            if (error) return(next(error));
+        }
+        if (dupTask && dupTask.id != task.id) {
+            errors.push ({msg:'Another task with this name exists in the job'});
+        }
 
 
-                var newTask = new Task (
-                    { name: req.body.name,
-                    description: req.body.description,
-                    startDateTime: req.body.startDateTime,
-                    endDateTime: req.body.endDateTime,
-                    job: task.job.id,
-                    persons: task.persons,
-                    roles: task.roles,
-                    _id: req.params.taskid
-                    });
-            
-                if (errors.length != 0) {
-                    res.render('task_form', { 
-                        title: "Modify task '" + task.name + "' for job '" + task.job.name + "'", 
-                        task: newTask,
-                        job: task.job,    
-                        errors: errors });
-                } else {
+        // build the new task record
+        var newTask = new Task (
+            { name: req.body.name,
+            description: req.body.description,
+            startDateTime: req.body.startDateTime,
+            endDateTime: req.body.endDateTime,
+            job: task.job.id,
+            persons: task.persons,
+            roles: task.roles,
+            _id: req.params.taskid
+            });
+    
+        // show the form again on error
+        if (errors.length != 0) {
+            res.render('task_form', { 
+                title: "Modify task '" + task.name + "' for job '" + task.job.name + "'", 
+                task: newTask,
+                job: task.job,    
+                errors: errors });
+        } else {
 
-                    // data is valid. update the record
-                    Task.findByIdAndUpdate(req.params.taskid, newTask, {}, function (err) {
-                        if (err) { return next(err); };
-                        if (req.body.assign == null)
-                            res.redirect('/jobs/job/'+req.params.id+'/tasks/');
-                        else {
-                            res.redirect('/tasks/job/'+req.params.id+'/task/'+newTask._id+'/assign');
-                        }
-                    });
+            // data is valid. update the record
+            Task.findByIdAndUpdate(req.params.taskid, newTask, {}, function (err) {
+                if (err) { return next(err); };
+                if (req.body.assign == null)
+                    res.redirect('/jobs/job/'+req.params.id+'/tasks/');
+                else {
+                    res.redirect('/tasks/job/'+req.params.id+'/task/'+newTask._id+'/assign');
                 }
             });
-        });
+        }
     }
 ]
 
-// modify the role/person list for a task
-// the task is in req.params.id
-// the roles are obtains from the job record for the task
-// the persons array should in the same order as the roles array
-// only one person can be assign to each role
-// a person can only be assign to one role
-// each person has a qualification and availability tag
-exports.task_assign_get =  function (req, res, next) {
-    // an array with each entry being a role with an array of person qualifications
-    // rolepersons = [{name: role.name, id:role.id, persons:[{name: person.fullName, id: person.id, qualified:qualified, available:available, selected:selected }]}]
-    // the POST request returns [Role#,person.id] in role order
-
-    // get the organization of the task's job
-    Job.findById(req.params.id).populate('role').exec(function (err, job) {
-        if (err) { return next(err);}
-
-        // get the persons of the organization
-        Person.find({'organization': job.organization}).exec(function (err, orgPersons) {
-            if (err) { return next(err);}
-
-            // get the task be processed and its roles
-            Task.findById(req.params.taskid).populate('roles').exec(function (err, task) {
-                if (err) { return next(err);}
-
-                // get the training for the roles
-                Role.find({'roles': task.roles}).populate('trainings').exec(function (err, roles) {
-                    if (err) { return next(err);}
-
-                    // get all the leaves for all of the people in the organization
-                    Leave.find({'person': orgPersons}).exec(function (err, leaves) {
-                        if (err) { return next(err);}
-
-                        // get all the person_trainings for all of the people in the organization
-                        Person_Training.find({'person': orgPersons}).populate('training').exec(function (err, person_trainings) {
-                            if (err) { return next(err);}
-
-                            // finally get all of defined tasks
-                            Task.find({}).exec(function (err, tasks){
-                                if (err) { return next(err);}
-                                // we need to check each person's availability for the task
-                                // and then if they are available, then check their qualification for each role
-
-                                // process each role for the job in turn
-                                var rolepersons = [];
-                                var taskPersons = task.persons;
-                                if (taskPersons.length == 0)
-                                    taskPersons.length = task.roles.length;
-                                for (let irole = 0; irole < task.roles.length; irole++) {
-                                    var roleName = task.roles[irole].name;
-                                    var roleid = task.roles[irole].id;
-                                    var roleTrainings = roles[irole].trainings;
-
-                                    // build the persons array for each role
-                                    var personData = [];
-                                    for (let iperson = 0; iperson < orgPersons.length; iperson++){
-
-                                        var personName = orgPersons[iperson].fullName;
-                                        var personId = orgPersons[iperson].id;
-                                        
-                                        var availability = helpers.Availability(task.startDateTime_formatted, task.endDateTime_formatted, task.id, orgPersons[iperson].id, leaves, tasks);
-                                        var qualification= helpers.Qualification(task.endDateTime_formatted, roleTrainings, person_trainings, orgPersons[iperson].id);
-
-                                        // see if the person is currently selected
-                                        var selected = isSelected (irole, taskPersons, orgPersons[iperson]);
-                                        // pile up the data on this person
-                                        personData.push (
-                                            {name: personName, 
-                                            id: personId, 
-                                            qualification: qualification, 
-                                            availability: availability, 
-                                            selected: selected});
-                                    }
-
-                                    // pile up the data on this role
-                                    rolepersons.push ({
-                                        name: roleName,
-                                        id: roleid,
-                                        persons: personData
-                                    });
-                                }
-                                // ready to display the task assignment page
-                                res.render('task_assignment_form', { 
-                                    title: "Assign Personnel for Task '" + task.name + "' of Job '" + job.name + "'",
-                                    job:job,
-                                    task: task,
-                                    roles: rolepersons});
-
-                            });
-                        });
-                    });
-                });
-
-            });
-        });
-    });
-}
-
-
-
-// see if a person is selected for a role 
-function isSelected (irole, persons, person) {
-    return (persons[irole] && person.id == persons[irole]);
-
-}
-
-// handle POST for task/person assignments
-exports.task_assign_post =  function (req, res, next) {
-
-
-    // build up the new task record from the existing one and the new
-    // assignment values
-    Task.findById(req.params.taskid).exec(function (err, task) {
-        if (err) { return next(err);}
-
-        // loop through the roles retrieve the selected person for each role
-        var irole = 0;
-        var pickedPersons = [];
-        for (const role in task.roles) {
-            var groupName = 'Role' + irole.toString();
-            if (req.body[groupName] != '')
-                pickedPersons.push(req.body[groupName]);
-            else {
-                const person = new Person();
-                pickedPersons.push(person.id);
-            }
-            irole++;
-        }
-
-        // build the new task record with the person assignment updates
-        newTask = new Task ({
-            name: task.name,
-            description: task.description,
-            startDateTime: task.startDateTime,
-            endDateTime: task.endDateTime,
-            job: task.job,
-            roles: task.roles,
-            _id: task.id
-        });
-        for (let i = 0; i < task.roles.length; i++) {
-            newTask.persons[i] = pickedPersons[i];
-        }
-
-        // update the task record and display the task list page
-        Task.findByIdAndUpdate(task.id, newTask, {}, function (err) {
-            if (err) { return next(err); }
-            res.redirect('/jobs/job/'+req.params.id+'/tasks/');
-        });
-    });
-
-}
-
 // Handle task delete on POST.
-exports.task_delete_get = function(req, res, next) {
+exports.task_delete_get = async function(req, res, next) {
 
-    async.parallel({
-        task: function(callback) {
-          Task.findById(req.params.taskid).exec(callback)
-        },
-    }, function(err, results) {
+    Task.findByIdAndRemove(req.params.taskid, function (err) {
         if (err) { return next(err); }
-        Task.findByIdAndRemove(req.params.taskid, function (err) {
-            if (err) { return next(err); }
-            res.redirect('/jobs/job/'+req.params.id+'/tasks');
-        })
-    });
+        res.redirect('/jobs/job/'+req.params.id+'/tasks');
+    })
 };
-

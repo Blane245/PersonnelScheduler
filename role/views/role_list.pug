@@ -15,7 +15,8 @@ block content
             thread 
                 tr 
                 th(class='text-left' scope='col') Name 
-                th(class='text-left' scope='col') Description 
+                th(class='text-left' scope='col') Description
+                    p Job count using role 
                 th(class='text-center' scope='col') Training Needs 
                 th(class='text-center' scope='col') Modify
                 th(class='text-center' scope='col') Delete
@@ -24,6 +25,7 @@ block content
                     tr 
                         td(class='text-left') #{role.name}
                         td(class='text-left') #{role.description}
+                            p= role.nJobs
                         td(class='text-center')
                             a(href='/roles/role/'+role.id+'/training')
                                 button.btn.btn-small.btn-dark(type='button')
@@ -58,6 +60,6 @@ block content
                             p Do you really want to delete this role?
                     div.modal-footer
                         if (role.nJobs == 0)
-                            a(href='/role/'+role.id+'/delete')
+                            a(href='/roles/role/'+role.id+'/delete')
                                 button.btn.btn-primary(type='button') OK
                         button.btn.btn-danger(type='button' data-dismiss='modal') Cancel
