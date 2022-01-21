@@ -67,6 +67,11 @@ block content
                         for job in jobs
                             option(value=job.id)  #{job.name}
     hr(style='height:5px;')
+    h1 Task Calender 
+    form(method='POST' action='')
+        div.row.mt-2 
+            div.col-sm-4 
+                button.btn.btn-primary(type='submit' name='task_calendar') Task Calender
     h1 Personnel Qualifications
     form(method='POST' action='')
         div.row.mt-2

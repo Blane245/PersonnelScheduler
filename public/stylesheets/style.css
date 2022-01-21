@@ -3,3 +3,7 @@
   padding: 0;
   list-style: none;
 }
+#calendar {
+  max-width: 1560px;
+  margin: 0 auto;
+}

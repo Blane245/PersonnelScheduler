@@ -3,7 +3,7 @@ var async = require('async');
 const Person = require('../../models/person');
 const Job = require('../../models/job');
 const Task = require('../../models/task');
-
+//TODO still having time zone problemsa
 // this controller does the heavy lifting of the Personnel Scheduling app
 // Tasks are what people do. In here are the CRUD controller for tasks
 // When a task is created, first the start and end dates are provided

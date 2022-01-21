@@ -1,0 +1,203 @@
+extends ../../views/report_layout
+
+block content
+    //- add some buttons for displaying avaiability and qualifications for the task in the time person shown
+    input(type='checkbox', name='aqDetails', id='aqDetails' textContent='true' onclick='switchAqDetails()')
+    label(for='aqDetails')  Include Availability and Qualifications Details
+    //- script for handling report of task details whn checkbox is on 
+    div(id='calendar')
+    div(id='aqDetailView')
+        h1 Task Details
+        hr
+        hr
+        h2 Task: name, Job: name, Organization: name 
+        h3 start(yy-MM-dd hh-mm-ss) to end (yy-mm-dd hh-mm-ss)
+        hr
+        h3(style= 'marginLeft:50px;') role name
+        h4(style= 'marginLeft:100px;') person name 
+        p(style= 'marginLeft:150px;') Available: true/false Qualification: true/false
+        h4(style= 'marginLeft:150px') Availability Exceptions 
+           p(style= 'marginLeft:200px;') reason 1
+           p(style= 'marginLeft:200px;') reason 2
+        h4(style= 'marginLeft:150px') Qualfication Exceptions 
+           p(style= 'marginLeft:200px;') reason 1
+           p(style= 'marginLeft:200px;') reason 2
+        hr
+        hr
+        h2 Task: name, Job: name, Organization: name 
+        h3 start(yy-MM-dd hh-mm-ss) to end (yy-mm-dd hh-mm-ss)
+        hr
+        h3(style= 'marginLeft:50px;') role name
+        h4(style= 'marginLeft:100px;') person name 
+        p(style= 'marginLeft:150px;') Available: true/false Qualification: true/false
+        h4(style= 'marginLeft:150px') Availability Exceptions 
+           p(style= 'marginLeft:200px;') reason 1
+           p(style= 'marginLeft:200px;') reason 2
+        h4(style= 'marginLeft:150px') Qualfication Exceptions 
+           p(style= 'marginLeft:200px;') reason 1
+           p(style= 'marginLeft:200px;') reason 2
+
+    //- handlers for show and hiding the task details below the calendar. 
+    //- The div is created at the end of the document to hold the contents
+    script.
+
+        // switch the task detail view
+        function switchAqDetails () {
+            let theBox = document.getElementById('aqDetails');
+            if (theBox.checked) {
+                // true on details
+                displayAqDetails ('aqDetailView', calendar);
+            }
+            else {
+                // turn off details
+                removeAqDetails ('aqDetailView');
+            }
+
+        }
+
+        function removeAqDetails (theDivId) {
+            let theDetails = document.getElementById(theDivId);
+            while (theDetails.lastChild) {
+                theDetails.removeChild(theDetails.lastChild);
+            }
+        }
+
+        // create an identified div unless it already exists
+        function getDiv (id) {
+            let theDiv = document.getElementById(id);
+            if (!theDiv) {
+                let lastChild = document.lastChild();
+                let theDiv = document.createElement('DIV');
+                document.body.appendChild(thediv);
+            }
+            return theDiv;
+
+        }
+
+        // javascript does not have a insertAfter function. This will will do the tripk.
+        function insertAfter(newNode, existingNode) {
+            existingNode.parentNode.insertBefore(newNode, existingNode.nextSibling);
+        }
+
+        // add task details from the calender for tasks that start or end during the 
+        // current calendar display period
+        function displayAqDetails (divId, calendar) {
+
+            let theDiv = getDiv (divId);
+
+            // remove any current details
+            removeAqDetails (divId);
+
+            // add the header
+            var item = document.createElement('h1');
+            item.textContent = 'Task Details';
+            theDiv.appendChild(item);
+            // get the start and end date of the current calendar's view
+            let start = calendar.view.activeStart;
+            let end = calendar.view.activeEnd;
+
+            // loop thorugh all of the events on the calendar
+            for (let anEvent of calendar.getEvents()) {
+
+                // select only the events that overlap the calendar
+                //TODO format the dates in normal zulu time 
+                let taskStart = anEvent.start /*.format('yy-MM-dd hh:mm:ss'); */
+                let taskEnd = anEvent.end /*.format('yy-MM-dd hh:mm:ss'); */
+                let task = anEvent.title;
+                let ep = anEvent.extendedProps.extendProps;
+                let org = ep.orgName;
+                let job = ep.jobName;
+                let ri = ep.roleInfo;
+
+                if ((taskStart >= start && taskStart <= end) ||
+                    taskEnd >= start && taskEnd <= end) {
+
+                    // add the details of this task to the selected div
+                    item = document.createElement('hr');
+                    insertAfter (item, theDiv.lastElementChild);
+                    item = document.createElement('hr');
+                    insertAfter (item, theDiv.lastElementChild);
+                    item = document.createElement('h2');
+                    item.textContent = 'Task: ' + task + ' Job: ' + job + ' Organization: ' + org;
+                    insertAfter (item, theDiv.lastElementChild);
+                    item = document.createElement('h3');
+                    item.style.marginLeft = '50px';
+                    item.textContent = taskStart + ' to ' + taskEnd;
+                    insertAfter (item, theDiv.lastElementChild);
+                    item = document.createElement('hr');
+                    insertAfter (item, theDiv.lastElementChild);
+                    if (ri.length == 0) {
+                        item = document.createElement('h3');
+                        item.style.marginLeft = '50px';
+                        item.textContent = 'No roles defined for this task';
+                        insertAfter (item, theDiv.lastElementChild);
+                       
+                    } else {
+                        for (let roleItem of ri) {
+                            item = document.createElement('h3');
+                            item.style.marginLeft = '50px';
+                            item.textContent = roleItem.role;
+                            insertAfter (item, theDiv.lastElementChild);
+                            item = document.createElement('h4');
+                            item.style.marginLeft = '100px';
+                            item.textContent = roleItem.person;
+                            insertAfter (item, theDiv.lastElementChild);
+                            //- item = document.createElement('p');
+                            //- item.style.marginLeft = '150px';
+                            //- item.textContent = 'Available: ' + roleItem.available + ', Qualified: ' + roleItem.qualified
+                            //- insertAfter (item, theDiv.lastElementChild);
+                            if (roleItem.availabilityReasons.length == 0) {
+                                item = document.createElement('h4');
+                                item.style.marginLeft = '150px';
+                                item.textContent = 'Person is available';
+                                insertAfter (item, theDiv.lastElementChild);
+
+                            } else {
+                                item = document.createElement('h4');
+                                item.style.marginLeft = '150px';
+                                item.textContent = 'Availability Exceptions';
+                                insertAfter (item, theDiv.lastElementChild);
+                                for (let reason of roleItem.availabilityReasons) {
+                                    item = document.createElement('p');
+                                    item.style.marginLeft = '200px';
+                                    item.textContent = reason;
+                                    insertAfter (item, theDiv.lastElementChild);
+                                }
+                            }
+                            if (roleItem.qualificationReasons.length == 0) {
+                                item = document.createElement('h4');
+                                item.style.marginLeft = '150px';
+                                item.textContent = 'Person is qualified';
+                                insertAfter (item, theDiv.lastElementChild);
+
+                            } else {
+                                item = document.createElement('h4');
+                                item.style.marginLeft = '150px';
+                                item.textContent = 'Qualification Exceptions';
+                                insertAfter (item, theDiv.lastElementChild);
+                                for (let reason of roleItem.qualificationReasons) {
+                                    item = document.createElement('p');
+                                    item.style.marginLeft = '200px';
+                                    item.textContent = reason;
+                                    insertAfter (item, theDiv.lastElementChild);
+                                }
+                            }
+                        }
+
+                    }
+
+                }
+            }
+        }
+        
+        // update the task details whenever the calendar view changes
+        // called byt the eventAfterAllRender callback
+        function updateDetails (dateInfo) {
+            let theBox = document.getElementById('aqDetails');
+            if (theBox.checked) {
+                displayAqDetails ('aqDetailView', calendar);                
+            }
+
+        }
+    #{scriptData}
+

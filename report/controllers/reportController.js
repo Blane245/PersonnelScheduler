@@ -5,6 +5,7 @@ var async = require('async');
 const { DateTime } = require("luxon");
 var training_reports = require('./reportTrainingController');
 var task_reports = require('./reportTaskController');
+var task_calendar_reports = require('./reportTaskCalendar');
 
 // the list of roles for an organization
 exports.report_menu = function (req, res, next) {
@@ -42,6 +43,8 @@ exports.report_menu_post = function (req, res, next) {
         task_reports.report_task_org (req, res, next, now);
     if (req.body.task_job != null)
         task_reports.report_task_job (req, res, next, now);
+    if (req.body.task_calendar != null)
+        task_calendar_reports.report_task_calendar (req, res, next, now);
     
     // fall thru - re-render the menu
 }

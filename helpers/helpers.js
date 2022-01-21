@@ -12,12 +12,12 @@ exports.Availability = function(startDateTime, endDateTime, taskId, personId, le
             if (leaves[i].startDate_formatted_extend <= endDateTime && leaves[i].endDate && leaves[i].endDate_formatted_extend > startDateTime) {
                 result.available = false;
                 result.reasons.push(
-                    "Leave '"+leaves[i].name+ "': " + leaves[i].startDate_formatted + " - " + leaves[i].endDate_formatted + " overlaps with task");
+                    "Leave "+leaves[i].name+ ": " + leaves[i].startDate_formatted + " - " + leaves[i].endDate_formatted + " overlaps with task");
             }
             if (leaves[i].startDate_formatted_extend <= endDateTime && !leaves[i].endDate) {
                 result.available = false;
                 result.reasons.push(
-                    "Person has indefinate leave '"+leaves[i].name+ "' starting " + leaves[i].startDate_formatted);
+                    "Person has indefinate leave "+leaves[i].name+ " starting " + leaves[i].startDate_formatted);
             }
         };
     }
@@ -42,7 +42,7 @@ exports.Availability = function(startDateTime, endDateTime, taskId, personId, le
                 (startdateTime >= tasks[i].startDateTime_formatted && startDate <= endDateTime_formatted)) {
                     result.available = false;
                     result.reasons.push(
-                        "Person is working task '" + tasks[i].name + "' which overlaps with this task"
+                        "Person is working task " + tasks[i].name + " which overlaps with this task"
                     );
                 }
             }
@@ -71,9 +71,9 @@ exports.Qualification = function(endDateTime, role_trainings, person_trainings, 
                 person.toString() == person_training.person._id.toString()) {
                 rtTags[irt] = true;
                 if (person_training.expirationDate && person_training.expirationDate_formatted_extend <= endDateTime){
-                    result.reasons.push ("Training '"+role_training.name+
-                        "' expires on "+person_training.expirationDate_formatted+
-                        " pror to the task's end date");
+                    result.reasons.push ("Training "+role_training.name+
+                        " expires on "+person_training.expirationDate_formatted+
+                        " pror to the task end date");
                     result.qualified = false;
                 }
             }
@@ -83,7 +83,7 @@ exports.Qualification = function(endDateTime, role_trainings, person_trainings, 
     // check if any trainng records are missing
     for (let i = 0; i < role_trainings.length; i++){
         if (!rtTags[i]){
-            result.reasons.push("No training records for '" + role_trainings[i].name + "'"); 
+            result.reasons.push("No training records for " + role_trainings[i].name); 
             result.qualified = false;
         }
 

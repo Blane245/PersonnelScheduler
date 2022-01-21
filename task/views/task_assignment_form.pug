@@ -61,6 +61,41 @@ block content
         p 
         a(href='/jobs/job/'+job.id+'/tasks')
             button.btn.btn-danger(type='button' ) Cancel
+        if (roles && roles.length != 0)
+            //- this section shows the availability and qualifcation details for all of the 
+            //- persons in the organization
+            div.row
+                div.col-sm-6
+                    details
+                        summary.font-weight-bold Availability Exceptions 
+                        //- only role 1 is needed for listing avaiability as it is role independent
+                        - iRole = 0
+                        for role in roles
+                            if (iRole == 0)
+                                for person in role.persons  
+                                    details  
+                                        summary.font-italic(style='text-indent:10px;')= person.name 
+                                        if (!person.availability.available)
+                                            for reason in person.availability.reasons
+                                                p(style='text-indent:20px;')= reason
+                                        else 
+                                            p(style='text-indent:20px;') There are no exceptions. Person is available
+                            - iRole++
+                div.col-sm-6
+                    details 
+                        summary.font-weight-bold Qualification Exceptions 
+                        for role in roles 
+                            details 
+                                summary.font-italic(style='text-indent:10px;')= role.name
+                                for person in role.persons 
+                                    details
+                                        summary.font-weight-light(style='text-indent:20px;')= person.name
+                                        if (!person.qualification.qualified)
+                                            for reason in person.qualification.reasons
+                                                p(style='text-indent:30px;')= reason
+                                        else 
+                                            p(style='text-indent:30px;') There are no exceptions. Person is qualified
+
     p.text-danger(id='validationErrors')
     if errors 
         ul  

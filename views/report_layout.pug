@@ -5,8 +5,11 @@ html(lang='en')
     meta(charset='utf-8')
     meta(name='viewport', content='width=device-width, initial-scale=1')
     link(rel="stylesheet", href="/stylesheets/bootstrap.min.css")
+    link(rel="stylesheet", href="fullcalendar/main.css")
     script(src="/javascripts/jquery-3.5.1.slim.min.js")
     script(src="/javascripts/bootstrap.min.js")
+    script(src="/javascripts/moment-with-locales.min.js")
+    script(src="fullcalendar/main.js")
     link(rel='stylesheet', href='/stylesheets/report_style.css')
   body
     div.container-fluid(style='background-color: azure;')
@@ -16,7 +19,7 @@ html(lang='en')
         div.col-sm-8
           h1.text-center Personnel Scheduling Report
         div.col-sm-2
-          h5= dateTime
+          h5.text-right= dateTime
       div.row
         div.col-sm-12
           block content
