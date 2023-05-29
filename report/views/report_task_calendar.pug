@@ -100,9 +100,10 @@ block content
             for (let anEvent of calendar.getEvents()) {
 
                 // select only the events that overlap the calendar
-                //TODO format the dates in normal zulu time 
-                let taskStart = anEvent.start /*.format('yy-MM-dd hh:mm:ss'); */
-                let taskEnd = anEvent.end /*.format('yy-MM-dd hh:mm:ss'); */
+                let taskStart = anEvent.start;
+
+                //- let taskStart = anEvent.start; /*.format('yy-MM-dd hh:mm:ss'); */
+                let taskEnd = anEvent.end;
                 let task = anEvent.title;
                 let ep = anEvent.extendedProps.extendProps;
                 let org = ep.orgName;
@@ -122,7 +123,16 @@ block content
                     insertAfter (item, theDiv.lastElementChild);
                     item = document.createElement('h3');
                     item.style.marginLeft = '50px';
-                    item.textContent = taskStart + ' to ' + taskEnd;
+                    //TODO format this in standard zulu format
+                    item.textContent = calendar.formatRange(taskStart, taskEnd,
+                        {year: '2-digit', 
+                        month: '2-digit', 
+                        day: '2-digit', 
+                        hour: '2-digit', 
+                        minute: '2-digit', 
+                        second: '2-digit', 
+                        hour12:'false', 
+                        separator: ' to ' });
                     insertAfter (item, theDiv.lastElementChild);
                     item = document.createElement('hr');
                     insertAfter (item, theDiv.lastElementChild);
@@ -189,7 +199,7 @@ block content
                 }
             }
         }
-        
+
         // update the task details whenever the calendar view changes
         // called byt the eventAfterAllRender callback
         function updateDetails (dateInfo) {
@@ -199,5 +209,42 @@ block content
             }
 
         }
-    #{scriptData}
+        
+        // FullCalender instantiation and data loading
+        var calendar;
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            const eventData = !{JSON.stringify(eventData)};
+
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                timeZone: 'UTC',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'},
+                events: eventData
+            });
+
+            calendar.render();
+            calendar.on('dateClick', function (info) {dateClick(info)});
+            calendar.on('eventClick', function (info) {
+            alert(calendar.formatRange(info.el.fcSeg.eventRange.range.start, info.el.fcSeg.eventRange.range.end,
+                {year: '2-digit', 
+                month: '2-digit', 
+                day: '2-digit', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit', 
+                hour12:'false', 
+                separator: ' to ' }));
+            });
+            calendar.on('datesSet', function (dateInfo) {
+                updateDetails (dateInfo);});
+
+        });
+        function dateClick (info) {
+            alert('date: ' + info.dateStr);
+        };
+
 
